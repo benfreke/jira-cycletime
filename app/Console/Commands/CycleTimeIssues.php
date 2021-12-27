@@ -47,8 +47,8 @@ class CycleTimeIssues extends Command
                 'maxResults' => 2,
                 'fields' => [
                     'summary',
-                    'statusCategory'
-                ]
+                    'statusCategory',
+                ],
             ]);
         $results = $response->json();
         var_dump($results);
