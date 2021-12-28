@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Issue;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -60,6 +61,7 @@ class CycleTimeIssues extends Command
                     'last_jira_update' => $issue['fields']['updated'],
                 ]
             );
+            $this->info(Carbon::diffInBusinessDays($issue['fields']['updated']));
         }
         $this->info(Issue::count());
         return Command::SUCCESS;
@@ -86,6 +88,6 @@ class CycleTimeIssues extends Command
      */
     private function getLastUpdatedDate(): string
     {
-        return '-100h';
+        return '-120h';
     }
 }

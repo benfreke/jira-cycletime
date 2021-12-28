@@ -36,7 +36,8 @@ services:
     environment:
       - 'COMPARE_ENV_FILES=${COMPARE_ENV_FILES:-0}'
       - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
-    image: 'benfreke/php:8.1.0-pgsql'
+    build:
+        dockerfile: scripts/docker/Dockerfile
     init: true
     networks:
       - php
