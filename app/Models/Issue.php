@@ -14,9 +14,9 @@ class Issue extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'summary',
-        'issue_id',
-        'last_jira_update'
+    protected $guarded = [];
+
+    protected $casts = [
+        'last_jira_update' => 'immutable_datetime',
     ];
 }

@@ -18,6 +18,10 @@ class Issues extends Migration
             $table->string('summary');
             $table->string('issue_id');
             $table->dateTime('last_jira_update');
+            $table->string('assignee')->nullable()->default(null);
+            $table->string('project');
+            $table->string('issue_type');
+            $table->smallInteger('cycletime')->nullable();
             $table->timestamps();
         });
     }

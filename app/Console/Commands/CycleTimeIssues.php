@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Issue;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -40,30 +40,40 @@ class CycleTimeIssues extends Command
      */
     public function handle()
     {
-        // Set my parameters
-        $response = Http::withBasicAuth('ben@netengine.com.au', config('cycletime.token'))
+        $resultsToGet = 20;
+        // Set my query
+        $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
             ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/search', [
                 'jql' => $this->getJql(),
                 'startAt' => 0,
-                'maxResults' => 10,
+                'maxResults' => $resultsToGet,
                 'fields' => [
                     'summary',
                     'statusCategory',
                 ],
             ]);
-        $this->info($this->getJql());
-        $this->info('Total ' . count($response->json('issues')));
+        $this->info("Attempting to find $resultsToGet issues");
+        $this->info('Total found ' . count($response->json('issues')));
         foreach ($response->json('issues') as $issue) {
-            Issue::updateOrCreate(
-                ['issue_id' => $issue['key']],
-                [
+            try {
+                // Make sure all potential values exist
+                if (empty($issue['fields']['assignee'])) {
+                    throw new Exception("Assignee field blank for {$issue['key']}");
+                }
+                $upsertFields = [
                     'summary' => $issue['fields']['summary'],
                     'last_jira_update' => $issue['fields']['updated'],
-                ]
-            );
-            $this->info(Carbon::diffInBusinessDays($issue['fields']['updated']));
+                    'assignee' => $issue['fields']['assignee']['displayName'],
+                    'project' => $issue['fields']['project']['key'],
+                    'issue_type' => $issue['fields']['issuetype']['name'],
+                ];
+                $keyField = ['issue_id' => $issue['key']];
+                Issue::updateOrCreate($keyField, $upsertFields);
+            } catch (Exception $exception) {
+                $this->error($exception->getMessage());
+            }
         }
-        $this->info(Issue::count());
+
         return Command::SUCCESS;
     }
 
@@ -76,7 +86,10 @@ class CycleTimeIssues extends Command
     {
         $jql = 'project IN ("Unscheduled","Planned Work")';
         $jql .= ' AND statuscategory = "Complete"';
-        $jql .= ' AND updated >= ' . $this->getLastUpdatedDate();
+        $updatedHours = $this->getLastUpdatedDate();
+        if ($updatedHours) {
+            $jql .= " AND updated >= $updatedHours";
+        }
 
         $jql .= ' ORDER BY updated ASC';
 
@@ -84,10 +97,20 @@ class CycleTimeIssues extends Command
     }
 
     /**
-     * @return string The last updated time we have in the DB, in hours
+     * @return string|null The last updated time we have in the DB, in hours
      */
-    private function getLastUpdatedDate(): string
+    private function getLastUpdatedDate(): ?string
     {
-        return '-120h';
+        $lastUpdatedIssue = Issue::latest('last_jira_update')->first();
+        if (!isset($lastUpdatedIssue->last_jira_update)) {
+            return null;
+        }
+        $hours = $lastUpdatedIssue->last_jira_update->diffInHours();
+        if ($hours) {
+            // Add an extra hour to ensure we don't miss anything
+            $hours++;
+            return "-${hours}h";
+        }
+        return null;
     }
 }
