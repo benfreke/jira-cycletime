@@ -78,7 +78,6 @@ class CycleTimeTransitions extends Command
         // Only save if something has changed
         if ($transition->isDirty()) {
             $transition->save();
-            // @todo now calculate cycle time
         }
 
         return self::SUCCESS;
