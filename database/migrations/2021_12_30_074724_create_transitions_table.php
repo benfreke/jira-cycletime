@@ -1,10 +1,11 @@
 <?php
 
+use App\Models\Issue;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Issues extends Migration
+class CreateTransitionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +14,12 @@ class Issues extends Migration
      */
     public function up()
     {
-        Schema::create('issues', function (Blueprint $table) {
+        Schema::create('transitions', function (Blueprint $table) {
             $table->id();
-            $table->string('summary');
             $table->string('issue_id')->unique();
-            $table->dateTime('last_jira_update');
-            $table->string('assignee')->nullable()->default(null);
-            $table->string('project');
-            $table->string('issue_type');
-            $table->smallInteger('cycletime')->nullable();
+            $table->timestamp('start')->nullable();
+            $table->timestamp('done')->nullable();
+            $table->foreign('issue_id')->references('issue_id')->on('issues');
             $table->timestamps();
         });
     }
@@ -33,6 +31,6 @@ class Issues extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('transitions');
     }
 }

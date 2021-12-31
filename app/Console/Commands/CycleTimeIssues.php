@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Issue;
+use App\Console\Commands\CycleTimeTransitions;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -40,7 +41,7 @@ class CycleTimeIssues extends Command
      */
     public function handle()
     {
-        $resultsToGet = 20;
+        $resultsToGet = 2;
         // Set my query
         $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
             ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/search', [
@@ -69,6 +70,7 @@ class CycleTimeIssues extends Command
                 ];
                 $keyField = ['issue_id' => $issue['key']];
                 Issue::updateOrCreate($keyField, $upsertFields);
+                $this->call(CycleTimeTransitions::class, ['key' => $issue['key']]);
             } catch (Exception $exception) {
                 $this->error($exception->getMessage());
             }
