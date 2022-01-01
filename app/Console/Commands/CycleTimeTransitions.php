@@ -44,7 +44,7 @@ class CycleTimeTransitions extends Command
     {
         $issueIdToFind = $this->argument('key');
         if (!$issueIdToFind) {
-            // Let's prompt for the issue id
+            // Let's prompt for the issue id if it's not provided
             $issueIdToFind = $this->ask('Issue ID to find transtions for:');
         }
         if (!$issueIdToFind) {
@@ -59,9 +59,15 @@ class CycleTimeTransitions extends Command
             ->acceptJson()->get(config('cycletime.jira-url') . "rest/api/3/issue/$issueIdToFind/changelog", []);
         $result = $response->json();
         $transition = Transition::firstOrNew(['issue_id' => $issueIdToFind]);
+        // We receive an array of transitions
         foreach ($result['values'] as $transitionItem) {
             $transitionTime = $transitionItem['created'];
+            // Each transition can have multiple items as part of it
             foreach ($transitionItem['items'] as $item) {
+                // Let's only look at status transitions
+                if (!$this->isStatusTransition($item['field'])) {
+                    continue;
+                }
                 if ($this->isStartTransition($item) && $transition->isOlderStart(
                         Carbon::createFromTimestamp($transitionTime)
                     )) {
@@ -83,20 +89,19 @@ class CycleTimeTransitions extends Command
         return self::SUCCESS;
     }
 
+    private function isStatusTransition(string $transitionStatus): bool
+    {
+        return $transitionStatus === 'status';
+    }
+
     private function isStartTransition(array $transition): bool
     {
-        if ($transition['field'] !== 'status') {
-            return false;
-        }
         return (Status::isToDoCategory($transition['fromString'])
             && Status::isInProgressCategory($transition['toString']));
     }
 
     private function isDoneTransition(array $transition): bool
     {
-        if ($transition['field'] !== 'status') {
-            return false;
-        }
         return (Status::isInProgressCategory($transition['fromString'])
             && Status::isDoneCategory($transition['toString']));
     }

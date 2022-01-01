@@ -37,7 +37,7 @@ class CycleTimeCalculate extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $results = Transition::whereNotNull(['done', 'start'])->get();
         foreach($results as $issue) {

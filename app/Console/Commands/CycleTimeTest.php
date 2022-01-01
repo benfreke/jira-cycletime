@@ -50,9 +50,9 @@ class CycleTimeTest extends Command
         $this->info('Testing connection');
         if (!$response->ok()) {
             $this->error('FAIL: Received a ' . $response->status() . ' response');
-            return CommandAlias::FAILURE;
+            return self::FAILURE;
         }
         $this->info('SUCCESS: ' . $response->json('baseUrl'));
-        return CommandAlias::SUCCESS;
+        return self::SUCCESS;
     }
 }
