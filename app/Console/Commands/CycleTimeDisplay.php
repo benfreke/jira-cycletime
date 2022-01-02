@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Issue;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
 class CycleTimeDisplay extends Command
 {
@@ -15,6 +15,14 @@ class CycleTimeDisplay extends Command
     const OUTPUT_TOTAL = 'total';
 
     const OUTPUT_COUNT = 'count';
+
+    const TIME_PERIOD_THIS_QUARTER = 'This quarter';
+
+    const TIME_PERIOD_LAST_QUARTER = 'Last quarter';
+
+    const TIME_PERIOD_LAST_MONTH = 'Last month';
+
+    const TIME_PERIOD_THIS_MONTH = 'This month';
 
     /**
      * The name and signature of the console command.
@@ -46,20 +54,35 @@ class CycleTimeDisplay extends Command
      */
     public function handle()
     {
-        // Get the previous quarter cycle time
-        $lastQuarter = Issue::where('assignee', '!=', 'Ben Freke')
-            ->whereNotNull('cycletime')
-            ->whereDate('last_jira_update', '<', Carbon::now()->firstOfQuarter());
-        $thisQuarter = Issue::where('assignee', '!=', 'Ben Freke')
-            ->whereNotNull('cycletime')
-            ->whereDate('last_jira_update', '>', Carbon::now()->firstOfQuarter())
-            ->whereDate('last_jira_update', '<', Carbon::now()->lastOfQuarter());
+        // What are we going to get?
+        $query = $this->getBaseQuery();
+        $timePeriod = $this->choice(
+            'What time period do you want results for?',
+            [
+                self::TIME_PERIOD_LAST_QUARTER,
+                self::TIME_PERIOD_THIS_QUARTER,
+                self::TIME_PERIOD_LAST_MONTH,
+                self::TIME_PERIOD_THIS_MONTH,
+            ],
+        );
 
-        $this->info('Last quarter: ' . $lastQuarter->avg('cycletime'));
-        $this->info('This quarter: ' . $thisQuarter->avg('cycletime'));
+        match ($timePeriod) {
+            self::TIME_PERIOD_LAST_QUARTER => $query->lastQuarter(),
+            self::TIME_PERIOD_LAST_MONTH => $query->lastMonth()
+        };
+
+        if ($this->confirm('Only for a single user?')) {
+            $assigneeToLimit = $this->choice(
+                'Select the user to get details for',
+                $this->getBaseQuery()->distinct('assignee')->pluck('assignee')->toArray()
+            );
+            $query->whereAssignee($assigneeToLimit);
+        }
+
+        $this->info($timePeriod);
         // Create an array, for output of results
         $outputResults = [];
-        foreach ($lastQuarter->get() as $row) {
+        foreach ($query->get() as $row) {
             if (!$row->cycletime) {
                 continue;
             }
@@ -70,6 +93,7 @@ class CycleTimeDisplay extends Command
             $outputResults[$row->assignee][$row->project][self::OUTPUT_TOTAL] += $row->cycletime;
         }
 
+        // Now convert the results into an array for the table output
         $output = [];
         foreach ($outputResults as $name => $results) {
             $combined = [
@@ -91,6 +115,11 @@ class CycleTimeDisplay extends Command
             $output
         );
         return self::SUCCESS;
+    }
+
+    private function getBaseQuery(): Builder
+    {
+        return Issue::hasCycleTime()->OnlyValidAssignees();
     }
 
     private function getAverage(array $results): float
