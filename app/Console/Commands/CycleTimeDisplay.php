@@ -48,14 +48,18 @@ class CycleTimeDisplay extends Command
     }
 
     /**
-     * Execute the console command.
+     * Prompts for display options for cycletime
+     *
+     * This could be done much neater in a raw SQL command, but this is simpler and easier to read
      *
      * @return int
      */
     public function handle()
     {
-        // What are we going to get?
+
         $query = $this->getBaseQuery();
+
+        // Prompt for the time period we want results for
         $timePeriod = $this->choice(
             'What time period do you want results for?',
             [
@@ -64,17 +68,22 @@ class CycleTimeDisplay extends Command
                 self::TIME_PERIOD_LAST_MONTH,
                 self::TIME_PERIOD_THIS_MONTH,
             ],
+            self::TIME_PERIOD_LAST_MONTH
         );
 
+        // Scope the results to the time period
         match ($timePeriod) {
             self::TIME_PERIOD_LAST_QUARTER => $query->lastQuarter(),
-            self::TIME_PERIOD_LAST_MONTH => $query->lastMonth()
+            self::TIME_PERIOD_THIS_QUARTER => $query->thisQuarter(),
+            self::TIME_PERIOD_LAST_MONTH => $query->lastMonth(),
+            self::TIME_PERIOD_THIS_MONTH => $query->thisMonth(),
         };
 
+        // If we want to restrict results to a single user, we do this here
         if ($this->confirm('Only for a single user?')) {
             $assigneeToLimit = $this->choice(
                 'Select the user to get details for',
-                $this->getBaseQuery()->distinct('assignee')->pluck('assignee')->toArray()
+                $this->getBaseQuery()->groupBy('assignee')->pluck('assignee')->toArray()
             );
             $query->whereAssignee($assigneeToLimit);
         }
@@ -117,11 +126,30 @@ class CycleTimeDisplay extends Command
         return self::SUCCESS;
     }
 
-    private function getBaseQuery(): Builder
+    /**
+     * Gets the base SQL to use for all queries
+     *
+     * We need to use a join as Eloquent relationships aren't called until after a get
+     *
+     * @return Builder|Issue
+     */
+    private function getBaseQuery(): Builder|Issue
     {
-        return Issue::hasCycleTime()->OnlyValidAssignees();
+        return Issue::hasCycleTime()->OnlyValidAssignees()->join(
+            'transitions',
+            'issues.issue_id',
+            '=',
+            'transitions.issue_id'
+        );
     }
 
+    /**
+     * Gets the average cycletime for a given period
+     *
+     * @param  array  $results
+     *
+     * @return float
+     */
     private function getAverage(array $results): float
     {
         if ($results[self::OUTPUT_COUNT] === 0) {

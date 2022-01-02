@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\Models\Issue
@@ -22,6 +23,11 @@ class Issue extends Model
         'last_jira_update' => 'immutable_datetime',
     ];
 
+    public function transition(): HasOne
+    {
+        return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
+    }
+
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
         return $query->whereNotIn('assignee', ['Ben Freke']);
@@ -35,24 +41,49 @@ class Issue extends Model
     public function scopeLastQuarter(Builder $query): Builder
     {
         return $query->whereDate(
-            'last_jira_update',
-            '<',
-            Carbon::now()->firstOfQuarter()
+            'done',
+            '>',
+            Carbon::now()->subQuarter()->firstOfQuarter()->startOfDay()
         )
             ->whereDate(
-                'last_jira_update',
-                '>',
-                Carbon::now()->subMonths(3)
+                'done',
+                '<',
+                Carbon::now()->subQuarter()->lastOfQuarter()->endOfDay()
+            );
+    }
+
+    public function scopeThisQuarter(Builder $query): Builder
+    {
+        return $query->whereDate(
+            'done',
+            '>',
+            Carbon::now()->firstOfQuarter()->startOfDay()
+        )
+            ->whereDate(
+                'done',
+                '<',
+                Carbon::now()->lastOfQuarter()->endOfDay()
             );
     }
 
     public function scopeLastMonth(Builder $query): Builder
     {
         return $query->whereBetween(
-            'last_jira_update',
+            'done',
             [
-                Carbon::now()->subMonth()->firstOfMonth(),
-                Carbon::now()->subMonth()->lastOfMonth()
+                Carbon::now()->subMonth()->firstOfMonth()->startOfDay(),
+                Carbon::now()->subMonth()->endOfMonth()->endOfDay(),
+            ]
+        );
+    }
+
+    public function scopeThisMonth(Builder $query): Builder
+    {
+        return $query->whereBetween(
+            'done',
+            [
+                Carbon::now()->firstOfMonth()->startOfDay(),
+                Carbon::now()->endOfMonth()->endOfDay(),
             ]
         );
     }
