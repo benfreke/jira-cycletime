@@ -19,6 +19,8 @@ services:
             - 'POSTGRES_USER=${DB_USERNAME}'
         image: 'postgres:14.1-alpine'
         init: true
+        ports:
+            - '5432:5432'
         networks:
             - database
         volumes:
@@ -29,8 +31,6 @@ services:
             - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
             - 'POSTGRES_USER=${DB_USERNAME}'
         image: 'postgres:14.1-alpine'
-        ports:
-            - '5432:5432'
         init: true
         networks:
             - database
