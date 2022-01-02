@@ -21,11 +21,6 @@ class Transition extends Model
         'done' => 'immutable_datetime',
     ];
 
-    public function issue(): BelongsTo
-    {
-        return $this->belongsTo(Issue::class, 'issue_id', 'issue_id');
-    }
-
     public function isOlderStart(Carbon $dateToCompare): bool
     {
         if (empty($this->start)) {
