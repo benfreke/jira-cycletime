@@ -14,7 +14,7 @@ class CycleTimeIssues extends Command
      *
      * @var string
      */
-    protected $signature = 'cycletime:issues';
+    protected $signature = 'cycletime:issues {resultsToGet=20}';
 
     /**
      * The console command description.
@@ -28,9 +28,10 @@ class CycleTimeIssues extends Command
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(private int $resultsToGet = 20)
     {
         parent::__construct();
+
     }
 
     /**
@@ -40,23 +41,24 @@ class CycleTimeIssues extends Command
      */
     public function handle(): int
     {
-        $resultsToGet = 50;
-
         $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
             ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/search', [
                 'jql' => $this->getJql(),
                 'startAt' => 0,
-                'maxResults' => $resultsToGet,
+                'maxResults' => $this->resultsToGet,
                 'fields' => [
                     'summary',
                     'statusCategory',
                 ],
             ]);
 
-        $this->info("Attempting to find $resultsToGet issues");
-        $this->info('Total found ' . count($response->json('issues')));
+        $totalFound = count($response->json('issues'));
+
+        $this->info("Attempting to find $this->resultsToGet issues");
+        $this->info("Total found $totalFound");
 
         foreach ($response->json('issues') as $issue) {
+
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
@@ -78,6 +80,13 @@ class CycleTimeIssues extends Command
                 $this->error($exception->getMessage());
             }
         }
+
+        // Let's go around again if we need to
+        if ($totalFound === $this->resultsToGet) {
+            $this->call(CycleTimeIssues::class);
+        }
+
+        $this->info("Remember to call php artisan cycletime:calculate to generate the correct cycletime");
 
         return Command::SUCCESS;
     }
