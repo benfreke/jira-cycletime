@@ -68,7 +68,7 @@ class CycleTimeDisplay extends Command
                 self::TIME_PERIOD_LAST_MONTH,
                 self::TIME_PERIOD_THIS_MONTH,
             ],
-            self::TIME_PERIOD_LAST_MONTH
+            self::TIME_PERIOD_THIS_QUARTER
         );
 
         // Scope the results to the time period
@@ -123,6 +123,9 @@ class CycleTimeDisplay extends Command
             ['Name', 'Planned', 'Total', 'Unscheduled', 'Total', 'Average', 'Total'],
             $output
         );
+
+
+
         return self::SUCCESS;
     }
 
