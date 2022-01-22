@@ -28,10 +28,9 @@ class CycleTimeIssues extends Command
      *
      * @return void
      */
-    public function __construct(private int $resultsToGet = 20)
+    public function __construct(private int $resultsToGet = 60)
     {
         parent::__construct();
-
     }
 
     /**
@@ -58,7 +57,6 @@ class CycleTimeIssues extends Command
         $this->info("Total found $totalFound");
 
         foreach ($response->json('issues') as $issue) {
-
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
