@@ -56,7 +56,6 @@ class CycleTimeDisplay extends Command
      */
     public function handle()
     {
-
         $query = $this->getBaseQuery();
 
         // Prompt for the time period we want results for
@@ -119,14 +118,52 @@ class CycleTimeDisplay extends Command
                 $results[self::PROJECT_PLANNED][self::OUTPUT_COUNT] + $results[self::PROJECT_UNSCHEDULED][self::OUTPUT_COUNT],
             ];
         }
+        // If we have multiple people, let's do the total averages
+        if (!isset($assigneeToLimit)) {
+            $output[] = [
+                'Averages',
+                $this->getAverageFromColumn($output, 1),
+                '-',
+                $this->getAverageFromColumn($output, 3),
+                '-',
+                $this->getAverageFromColumn($output, 5),
+                '-',
+            ];
+        }
+
         $this->table(
             ['Name', 'Planned', 'Total', 'Unscheduled', 'Total', 'Average', 'Total'],
             $output
         );
 
-
-
         return self::SUCCESS;
+    }
+
+    /**
+     * Gets the average of a column
+     *
+     * Only counts rows that have a non zero value
+     *
+     * @param  array  $resultSet
+     * @param  int  $columnKey
+     *
+     * @return float
+     */
+    private function getAverageFromColumn(array $resultSet, int $columnKey): float
+    {
+        $total = 0;
+        $count = count($resultSet);
+        $cellsWithZero = 0;
+        for($i = 0; $i < $count; $i++) {
+            $cellNumber = $resultSet[$i][$columnKey];
+            $total += $cellNumber;
+
+            // If the value was zero, don't count this when deciding the average
+            if (!$cellNumber) {
+                $cellsWithZero++;
+            }
+        }
+        return number_format($total / ($count - $cellsWithZero), 2);
     }
 
     /**
