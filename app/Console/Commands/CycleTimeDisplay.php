@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CycleTimeDisplay extends Command
 {
-    const PROJECT_PLANNED = 'PLAN';
+    const PROJECT_SCOUT_FEATURES = 'PLAN';
 
-    const PROJECT_UNSCHEDULED = 'UNS';
+    const PROJECT_SCOUT_SUPPORT = 'UNS';
+
+    const PROJECT_SCOUT_CBW = 'CBW';
+
+    const PROJECT_AGENCY = 'AGENCY';
 
     const OUTPUT_TOTAL = 'total';
 
@@ -105,17 +109,30 @@ class CycleTimeDisplay extends Command
         $output = [];
         foreach ($outputResults as $name => $results) {
             $combined = [
-                self::OUTPUT_TOTAL => $results[self::PROJECT_PLANNED][self::OUTPUT_TOTAL] + $results[self::PROJECT_UNSCHEDULED][self::OUTPUT_TOTAL],
-                self::OUTPUT_COUNT => $results[self::PROJECT_PLANNED][self::OUTPUT_COUNT] + $results[self::PROJECT_UNSCHEDULED][self::OUTPUT_COUNT],
+                self::OUTPUT_TOTAL => $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL]
+                    + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL]
+                    + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL]
+                    + $results[self::PROJECT_AGENCY][self::OUTPUT_TOTAL],
+                self::OUTPUT_COUNT => $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT]
+                    + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT]
+                    + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT]
+                    + $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT],
             ];
             $output[] = [
                 $name,
-                $this->getAverage($results['PLAN']),
-                $results[self::PROJECT_PLANNED][self::OUTPUT_COUNT],
-                $this->getAverage($results['UNS']),
-                $results[self::PROJECT_UNSCHEDULED][self::OUTPUT_COUNT],
+                $this->getAverage($results[self::PROJECT_SCOUT_FEATURES]),
+                $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT],
+                $this->getAverage($results[self::PROJECT_SCOUT_SUPPORT]),
+                $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT],
+                $this->getAverage($results[self::PROJECT_SCOUT_CBW]),
+                $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT],
+                $this->getAverage($results[self::PROJECT_AGENCY]),
+                $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT],
                 $this->getAverage($combined),
-                $results[self::PROJECT_PLANNED][self::OUTPUT_COUNT] + $results[self::PROJECT_UNSCHEDULED][self::OUTPUT_COUNT],
+                $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT]
+                + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT]
+                + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT]
+                + $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT],
             ];
         }
         // If we have multiple people, let's do the total averages
@@ -128,11 +145,15 @@ class CycleTimeDisplay extends Command
                 '-',
                 $this->getAverageFromColumn($output, 5),
                 '-',
+                $this->getAverageFromColumn($output, 7),
+                '-',
+                $this->getAverageFromColumn($output, 9),
+                '-',
             ];
         }
 
         $this->table(
-            ['Name', 'Planned', 'Total', 'Unscheduled', 'Total', 'Average', 'Total'],
+            ['Name', 'Features', 'Total', 'Support', 'Total', 'CBW', 'Total', 'Agency', 'Total', 'Average', 'Total'],
             $output
         );
 
@@ -154,7 +175,7 @@ class CycleTimeDisplay extends Command
         $total = 0;
         $count = count($resultSet);
         $cellsWithZero = 0;
-        for($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $cellNumber = $resultSet[$i][$columnKey];
             $total += $cellNumber;
 
@@ -201,12 +222,18 @@ class CycleTimeDisplay extends Command
     private function setDefaultOutput(array $oldArray, string $assignee): array
     {
         $oldArray[$assignee] = [];
-        $oldArray[$assignee][self::PROJECT_PLANNED] = [];
-        $oldArray[$assignee][self::PROJECT_PLANNED][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_PLANNED][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_UNSCHEDULED] = [];
-        $oldArray[$assignee][self::PROJECT_UNSCHEDULED][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_UNSCHEDULED][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY] = [];
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_TOTAL] = 0;
 
         return $oldArray;
     }

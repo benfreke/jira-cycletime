@@ -96,7 +96,7 @@ class CycleTimeIssues extends Command
      */
     private function getJql(): string
     {
-        $jql = 'project IN ("Unscheduled","Planned Work")';
+        $jql = 'project IN ("AGENCY","PLAN","UNS","CBW")';
         $jql .= ' AND statuscategory = "Complete"';
         $updatedHours = $this->getLastUpdatedDate();
         if ($updatedHours) {
