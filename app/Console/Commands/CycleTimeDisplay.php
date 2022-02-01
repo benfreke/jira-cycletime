@@ -71,16 +71,10 @@ class CycleTimeDisplay extends Command
                 self::TIME_PERIOD_LAST_MONTH,
                 self::TIME_PERIOD_THIS_MONTH,
             ],
-            self::TIME_PERIOD_THIS_QUARTER
+            self::TIME_PERIOD_LAST_MONTH
         );
 
-        // Scope the results to the time period
-        match ($timePeriod) {
-            self::TIME_PERIOD_LAST_QUARTER => $query->lastQuarter(),
-            self::TIME_PERIOD_THIS_QUARTER => $query->thisQuarter(),
-            self::TIME_PERIOD_LAST_MONTH => $query->lastMonth(),
-            self::TIME_PERIOD_THIS_MONTH => $query->thisMonth(),
-        };
+        $query = $this->setQueryTime($query, $timePeriod);
 
         // If we want to restrict results to a single user, we do this here
         if ($this->confirm('Only for a single user?')) {
@@ -157,7 +151,39 @@ class CycleTimeDisplay extends Command
             $output
         );
 
+        if (isset($assigneeToLimit)) {
+            $query = $this->getBaseQuery();
+            $query = $this->setQueryTime($query, $timePeriod);
+            $this->table(
+                ['id', 'summary'],
+                $query->whereAssignee($assigneeToLimit)
+                    ->get(
+                        ['issues.issue_id', 'summary']
+                    )->toArray()
+            );
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Scope the results to the time period
+     *
+     * @param  Builder|Issue  $builder
+     * @param  string  $timePeriod
+     *
+     * @return Builder|Issue
+     */
+    private function setQueryTime(Builder|Issue $builder, string $timePeriod): Builder|Issue
+    {
+        match ($timePeriod) {
+            self::TIME_PERIOD_LAST_QUARTER => $builder->lastQuarter(),
+            self::TIME_PERIOD_THIS_QUARTER => $builder->thisQuarter(),
+            self::TIME_PERIOD_LAST_MONTH => $builder->lastMonth(),
+            self::TIME_PERIOD_THIS_MONTH => $builder->thisMonth(),
+        };
+
+        return $builder;
     }
 
     /**
