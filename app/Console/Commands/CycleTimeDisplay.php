@@ -62,6 +62,10 @@ class CycleTimeDisplay extends Command
     {
         $query = $this->getBaseQuery();
 
+//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->avg('cycletime'));
+//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->max('cycletime'));
+//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->count('cycletime'));
+
         // Prompt for the time period we want results for
         $timePeriod = $this->choice(
             'What time period do you want results for?',
@@ -155,10 +159,11 @@ class CycleTimeDisplay extends Command
             $query = $this->getBaseQuery();
             $query = $this->setQueryTime($query, $timePeriod);
             $this->table(
-                ['id', 'summary'],
+                ['id', 'cycletime', 'summary'],
                 $query->whereAssignee($assigneeToLimit)
+                    ->orderByDesc('cycletime')
                     ->get(
-                        ['issues.issue_id', 'summary']
+                        ['issues.issue_id', 'cycletime', 'summary']
                     )->toArray()
             );
         }
