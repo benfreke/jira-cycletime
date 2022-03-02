@@ -25,7 +25,7 @@ class Issue extends Model
 
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
-        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang']);
+        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']);
     }
 
     public function scopeHasCycletime(Builder $query): Builder|Issue
