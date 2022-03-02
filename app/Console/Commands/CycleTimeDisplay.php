@@ -205,6 +205,9 @@ class CycleTimeDisplay extends Command
     {
         $total = 0;
         $count = count($resultSet);
+        if (!$count) {
+            return 0;
+        }
         $cellsWithZero = 0;
         for ($i = 0; $i < $count; $i++) {
             $cellNumber = $resultSet[$i][$columnKey];
@@ -214,6 +217,10 @@ class CycleTimeDisplay extends Command
             if (!$cellNumber) {
                 $cellsWithZero++;
             }
+        }
+        // Exit early if zero
+        if ($count && ($count === $cellsWithZero)) {
+            return 0;
         }
         return number_format($total / ($count - $cellsWithZero), 2);
     }
