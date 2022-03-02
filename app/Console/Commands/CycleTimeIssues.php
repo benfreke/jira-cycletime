@@ -81,7 +81,7 @@ class CycleTimeIssues extends Command
 
         // Let's go around again if we need to
         if ($totalFound === $this->resultsToGet) {
-            $this->call(CycleTimeIssues::class);
+            return $this->call(CycleTimeIssues::class);
         }
 
         $this->info("Remember to call php artisan cycletime:calculate to generate the correct cycletime");
