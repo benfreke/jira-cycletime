@@ -218,8 +218,8 @@ class CycleTimeDisplay extends Command
                 $cellsWithZero++;
             }
         }
-        // Exit early if zero
-        if ($count && ($count === $cellsWithZero)) {
+        // Exit early if they cancel each other out
+        if ($count === $cellsWithZero) {
             return 0;
         }
         return number_format($total / ($count - $cellsWithZero), 2);
