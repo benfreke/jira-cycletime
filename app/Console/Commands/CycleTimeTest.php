@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Issue;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Console\Command\Command as CommandAlias;
 
 use function config;
 
@@ -44,6 +44,18 @@ class CycleTimeTest extends Command
      */
     public function handle(): int
     {
+//        Manual updating script
+//        $newQuery = Issue::onlyValidAssignees()->join(
+//            'transitions',
+//            'issues.issue_id',
+//            '=',
+//            'transitions.issue_id'
+//        )->whereNull('done');
+//
+//        foreach($newQuery->get() as $nullDoneIssue) {
+//            $this->call(CycleTimeTransitions::class, ['key' => $nullDoneIssue['issue_id']]);
+//        }
+
         $response = Http::withToken(config('cycletime.token'))
             ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/serverInfo');
 
