@@ -7,26 +7,26 @@ namespace App\Models;
  */
 enum Status: string
 {
-    case TODO = 'To Do';
+    case TODO = 'to do';
 
-    case IN_PROGRESS = 'In Progress';
+    case IN_PROGRESS = 'in progress';
 
-    case REVIEW = 'Review';
+    case REVIEW = 'review';
 
-    case UAT = 'UAT';
+    case UAT = 'uat';
 
-    case RELEASABLE = 'Releasable';
+    case RELEASABLE = 'releasable';
 
-    case DONE = 'Done';
+    case DONE = 'done';
 
     public static function isToDoCategory(string $status): bool
     {
-        return $status === Status::TODO->value;
+        return strtolower($status) === strtolower(Status::TODO->value);
     }
 
     public static function isInProgressCategory(string $status): bool
     {
-        return match ($status) {
+        return match (strtolower($status)) {
             Status::IN_PROGRESS->value, Status::REVIEW->value, Status::UAT->value => true,
             default => false
         };
@@ -34,7 +34,7 @@ enum Status: string
 
     public static function isDoneCategory(string $status): bool
     {
-        return match ($status) {
+        return match (strtolower($status)) {
             Status::RELEASABLE->value, Status::DONE->value => true,
             default => false
         };
