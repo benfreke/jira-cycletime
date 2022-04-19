@@ -63,13 +63,17 @@ class Issue extends Model
 
     public function scopeLastMonth(Builder $query): Builder
     {
-        return $query->whereBetween(
-            'done',
-            [
-                Carbon::now()->subMonth()->firstOfMonth()->startOfDay(),
-                Carbon::now()->subMonth()->endOfMonth()->endOfDay(),
-            ]
-        );
+        return $this->getPastMonths($query, 1);
+    }
+
+    public function scopeLastTwoMonths(Builder $query): Builder
+    {
+        return $this->getPastMonths($query, 2);
+    }
+
+    public function scopeLastThreeMonths(Builder $query): Builder
+    {
+        return $this->getPastMonths($query, 3);
     }
 
     public function scopeThisMonth(Builder $query): Builder
@@ -79,6 +83,17 @@ class Issue extends Model
             [
                 Carbon::now()->firstOfMonth()->startOfDay(),
                 Carbon::now()->endOfMonth()->endOfDay(),
+            ]
+        );
+    }
+
+    protected function getPastMonths(Builder $query, int $months): Builder
+    {
+        return $query->whereBetween(
+            'done',
+            [
+                Carbon::now()->subMonths($months)->firstOfMonth()->startOfDay(),
+                Carbon::now()->subMonths($months)->endOfMonth()->endOfDay(),
             ]
         );
     }

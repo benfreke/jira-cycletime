@@ -26,6 +26,10 @@ class CycleTimeDisplay extends Command
 
     const TIME_PERIOD_LAST_MONTH = 'Last month';
 
+    const TIME_PERIOD_TWO_MONTHS = '2 months ago';
+
+    const TIME_PERIOD_THREE_MONTHS = '3 months ago';
+
     const TIME_PERIOD_THIS_MONTH = 'This month';
 
     /**
@@ -73,6 +77,8 @@ class CycleTimeDisplay extends Command
                 self::TIME_PERIOD_LAST_QUARTER,
                 self::TIME_PERIOD_THIS_QUARTER,
                 self::TIME_PERIOD_LAST_MONTH,
+                self::TIME_PERIOD_TWO_MONTHS,
+                self::TIME_PERIOD_THREE_MONTHS,
                 self::TIME_PERIOD_THIS_MONTH,
             ],
             self::TIME_PERIOD_LAST_MONTH
@@ -185,6 +191,8 @@ class CycleTimeDisplay extends Command
             self::TIME_PERIOD_LAST_QUARTER => $builder->lastQuarter(),
             self::TIME_PERIOD_THIS_QUARTER => $builder->thisQuarter(),
             self::TIME_PERIOD_LAST_MONTH => $builder->lastMonth(),
+            self::TIME_PERIOD_TWO_MONTHS => $builder->lastTwoMonths(),
+            self::TIME_PERIOD_THREE_MONTHS => $builder->lastThreeMonths(),
             self::TIME_PERIOD_THIS_MONTH => $builder->thisMonth(),
         };
 
