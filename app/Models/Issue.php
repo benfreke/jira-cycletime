@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\Models\Issue
@@ -96,5 +95,21 @@ class Issue extends Model
                 Carbon::now()->subMonths($months)->endOfMonth()->endOfDay(),
             ]
         );
+    }
+
+    /**
+     * @return int|null
+     */
+    public static function getLastUpdatedDate(): ?int
+    {
+        $lastUpdatedIssue = Issue::latest('last_jira_update')->first();
+        if (!isset($lastUpdatedIssue->last_jira_update)) {
+            return null;
+        }
+        $hours = $lastUpdatedIssue->last_jira_update->diffInHours();
+        if (!$hours) {
+            return null;
+        }
+        return $hours;
     }
 }
