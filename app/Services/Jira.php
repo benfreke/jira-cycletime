@@ -20,7 +20,7 @@ class Jira
     public function getIssues(): array
     {
         $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
-            ->acceptJson()->get(config('cycletime.jira-url') . config('cycletime.jira-url'), [
+            ->acceptJson()->get(config('cycletime.jira-host') . config('cycletime.jira-url'), [
                 'jql' => $this->getJql(),
                 'startAt' => 0,
                 'maxResults' => $this->resultsToGet,
