@@ -57,7 +57,7 @@ class CycleTimeTest extends Command
 //        }
 
         $response = Http::withToken(config('cycletime.token'))
-            ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/serverInfo');
+            ->acceptJson()->get(config('cycletime.jira-host') . 'rest/api/3/serverInfo');
 
         $this->info('Testing connection');
         if (!$response->ok()) {
