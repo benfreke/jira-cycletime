@@ -100,7 +100,7 @@ class Issue extends Model
     /**
      * @return int|null
      */
-    public static function getLastUpdatedDate(): ?int
+    public function getLastUpdatedDate(): ?int
     {
         $lastUpdatedIssue = Issue::latest('last_jira_update')->first();
         if (!isset($lastUpdatedIssue->last_jira_update)) {

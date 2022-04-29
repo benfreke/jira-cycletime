@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Http;
 
 class Jira
 {
-    public function __construct(private readonly int $resultsToGet = 60)
-    {
-
+    public function __construct(
+        private readonly int $resultsToGet = 60,
+        private readonly Issue $issueModel = new Issue()
+    ) {
     }
 
     /**
@@ -40,7 +41,7 @@ class Jira
      */
     public function getJql(): string
     {
-        $jql = 'project IN ' . config('cycletime.jira-categories');
+        $jql = 'project IN (' . config('cycletime.jira-categories') . ')';
         $jql .= ' AND statuscategory = "Complete"';
         $updatedHours = $this->getLastUpdatedDate();
         if ($updatedHours) {
@@ -52,13 +53,12 @@ class Jira
         return $jql;
     }
 
-
     /**
      * @return string|null The last updated time we have in the DB, in hours
      */
     private function getLastUpdatedDate(): ?string
     {
-        $hours = Issue::getLastUpdatedDate();
+        $hours = $this->issueModel->getLastUpdatedDate();
         if (is_numeric($hours)) {
             $hours++;
             return "-${hours}h";
