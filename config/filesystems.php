@@ -35,6 +35,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        'fixtures' => [
+            'driver' => 'local',
+            'root' => base_path('tests' . DIRECTORY_SEPARATOR . 'Fixtures')
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
