@@ -4,7 +4,6 @@ namespace Tests\Feature\Model;
 
 use App\Models\Issue;
 use Carbon\Carbon;
-use Hamcrest\Core\Is;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
