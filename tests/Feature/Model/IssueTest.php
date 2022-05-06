@@ -30,4 +30,13 @@ class IssueTest extends TestCase
         ]);
         self::assertEquals(4, $issueClass->getLastUpdatedDate());
     }
+
+    public function testGetTransition()
+    {
+
+
+        // Test for a null Transition
+        $issueClass = Issue::factory()->make([]);
+        self::assertNull($issueClass->transition);
+    }
 }

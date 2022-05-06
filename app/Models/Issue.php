@@ -22,6 +22,11 @@ class Issue extends Model
         'last_jira_update' => 'immutable_datetime',
     ];
 
+    public function transition()
+    {
+        return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
+    }
+
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
         return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']);
