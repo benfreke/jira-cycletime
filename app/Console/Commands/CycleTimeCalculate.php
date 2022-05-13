@@ -39,8 +39,9 @@ class CycleTimeCalculate extends Command
      */
     public function handle(): int
     {
-        $results = Transition::whereNotNull(['done', 'start'])->get();
-        foreach($results as $issue) {
+        $results = Issue::needsNewCycletime();
+        $this->info('Total: ' . $results->count());
+        foreach ($results->get() as $issue) {
             $this->calculateCycleTime($issue->issue_id);
         }
         return self::SUCCESS;

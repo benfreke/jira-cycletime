@@ -242,7 +242,7 @@ class CycleTimeDisplay extends Command
      */
     private function getBaseQuery(): Builder|Issue
     {
-        return Issue::hasCycleTime()->OnlyValidAssignees()->join(
+        return Issue::hasCycleTime()->onlyValidAssignees()->join(
             'transitions',
             'issues.issue_id',
             '=',
