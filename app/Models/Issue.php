@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\Models\Issue
@@ -22,14 +23,32 @@ class Issue extends Model
         'last_jira_update' => 'immutable_datetime',
     ];
 
-    public function transition()
+    /**
+     * @return Transition|HasOne|null
+     */
+    public function transition(): Transition|HasOne|null
     {
         return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
     }
 
+    /**
+     * @param  Builder  $query
+     *
+     * @return Builder
+     */
+    public function scopeNeedsNewCycletime(Builder $query): Builder
+    {
+        return $query
+            ->join('transitions', 'issues.issue_id', '=', 'transitions.issue_id')
+            ->whereColumn('issues.last_jira_update', '>=', 'transitions.updated_at')
+            ->whereNotNull('transitions.start')
+            ->whereNotNull('transitions.done');
+    }
+
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
-        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']);
+        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']
+        )->whereNotNull('assignee');
     }
 
     public function scopeHasCycletime(Builder $query): Builder|Issue
@@ -91,17 +110,6 @@ class Issue extends Model
         );
     }
 
-    protected function getPastMonths(Builder $query, int $months): Builder
-    {
-        return $query->whereBetween(
-            'done',
-            [
-                Carbon::now()->subMonths($months)->firstOfMonth()->startOfDay(),
-                Carbon::now()->subMonths($months)->endOfMonth()->endOfDay(),
-            ]
-        );
-    }
-
     /**
      * @return int|null
      */
@@ -116,5 +124,16 @@ class Issue extends Model
             return null;
         }
         return $hours;
+    }
+
+    protected function getPastMonths(Builder $query, int $months): Builder
+    {
+        return $query->whereBetween(
+            'done',
+            [
+                Carbon::now()->subMonths($months)->firstOfMonth()->startOfDay(),
+                Carbon::now()->subMonths($months)->endOfMonth()->endOfDay(),
+            ]
+        );
     }
 }
