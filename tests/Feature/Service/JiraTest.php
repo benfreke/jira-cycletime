@@ -15,7 +15,7 @@ class JiraTest extends TestCase
     public function testGetIssues()
     {
         // Arrange
-        Http::fake(['*' => Http::response($this->getFixture('jiraresponse2.json'))]);
+        Http::fake(['*' => Http::response($this->getFixture('fakeJiraResponse.json'))]);
         $mockedIssue = \Mockery::mock(Issue::class);
             $mockedIssue->shouldReceive('getLastUpdatedDate')
             ->andReturn(null);
@@ -25,6 +25,6 @@ class JiraTest extends TestCase
         $response = $jiraService->getIssues();
 
         // Assert
-        self::assertEqualsCanonicalizing($this->getFixture('jiraresponse.json'), $response);
+        self::assertEqualsCanonicalizing($this->getFixture('fakeJiraResponseIssues.json'), $response);
     }
 }
