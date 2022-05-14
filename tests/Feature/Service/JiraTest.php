@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Contract;
+namespace Tests\Feature\Service;
 
 use App\Models\Issue;
 use App\Services\Jira;
@@ -10,12 +10,11 @@ use Tests\TestCase;
 /**
  * Let's make sure Jira doesn't start returning bad data
  */
-class GetIssues extends TestCase
+class JiraTest extends TestCase
 {
     public function testGetIssues()
     {
         // Arrange
-//        Load from file system
         Http::fake(['*' => Http::response($this->getFixture('jiraresponse2.json'))]);
         $mockedIssue = \Mockery::mock(Issue::class);
             $mockedIssue->shouldReceive('getLastUpdatedDate')
