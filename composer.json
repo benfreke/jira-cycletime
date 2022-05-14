@@ -39,12 +39,10 @@
     },
     "scripts": {
         "test-coverage": [
-            "composer install",
             "@putenv XDEBUG_MODE=coverage",
             "./vendor/bin/phpunit -c phpunit.xml --coverage-text --colors=never"
         ],
         "test": [
-            "composer install",
             "./vendor/bin/phpunit -c phpunit.xml"
         ],
         "lint-php": [
