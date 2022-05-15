@@ -45,7 +45,7 @@ class CycleTimeTransitions extends Command
         $issueIdToFind = $this->argument('key');
         if (!$issueIdToFind) {
             // Let's prompt for the issue id if it's not provided
-            $issueIdToFind = $this->ask('Issue ID to find transtions for:');
+            $issueIdToFind = $this->ask('Issue ID to find transitions for:');
         }
         if (!$issueIdToFind) {
             $this->error('No issue key provided!');
