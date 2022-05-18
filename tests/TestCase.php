@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Storage;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -10,14 +12,15 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * Gets a specific fixture for testing purposes
+     *
      * @param $fileName
      *
      * @return mixed
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function getFixture($fileName): mixed
     {
-        return json_decode(\Storage::drive('fixtures')->get($fileName), true);
+        return json_decode(Storage::drive('fixtures')->get($fileName), true);
     }
 
     /**
@@ -30,6 +33,6 @@ abstract class TestCase extends BaseTestCase
      */
     public function setFixture(string $fileName, string $contents): bool
     {
-        return \Storage::drive('fixtures')->put($fileName, $contents);
+        return Storage::drive('fixtures')->put($fileName, $contents);
     }
 }
