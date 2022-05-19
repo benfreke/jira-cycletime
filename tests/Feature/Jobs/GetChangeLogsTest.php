@@ -13,6 +13,7 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Mockery\Mock;
 use Tests\TestCase;
 
 class GetChangeLogsTest extends TestCase
@@ -31,10 +32,12 @@ class GetChangeLogsTest extends TestCase
         Queue::fake();
         Http::fake(['*' => Http::response($this->getFixture('fakeJiraResponse.json'))]);
 
+        /** @var Mock|Jira $mockedJiraService */
         $mockedJiraService = \Mockery::mock(Jira::class)->makePartial();
         $mockedJiraService->shouldReceive('getIssueChangelogs')
             ->andReturn($this->getFixture('fakeChangeLog.json'));
 
+        /** @var Issue $issue */
         $issue = Issue::factory()->has(Transition::factory())->create(
             ['issue_id' => 'PLAN-30', 'last_jira_update' => Carbon::now()->subMinutes(1)]
         );

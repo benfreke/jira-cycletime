@@ -9,7 +9,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 
 class GetChangeLogs implements ShouldQueue
 {
@@ -20,7 +19,7 @@ class GetChangeLogs implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(private Issue $issue, private readonly Jira $jiraService = new Jira())
+    public function __construct(private readonly Issue $issue, private readonly Jira $jiraService = new Jira())
     {
     }
 
