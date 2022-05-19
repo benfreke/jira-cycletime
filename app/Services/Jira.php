@@ -70,15 +70,9 @@ class Jira
         return $jql;
     }
 
-    public function isStatusTransition(string $transitionStatus): bool
-    {
-        return $transitionStatus === 'status';
-    }
-
     public function isStartTransition(array $transition): bool
     {
-        return (
-            $this->isStatusTransition($transition['field'])
+        return ($this->isStatusTransition($transition['field'])
             && Status::isToDoCategory($transition['fromString'])
             && Status::isInProgressCategory($transition['toString']));
     }
@@ -88,6 +82,11 @@ class Jira
         return ($this->isStatusTransition($transition['field'])
             && Status::isInProgressCategory($transition['fromString'])
             && Status::isDoneCategory($transition['toString']));
+    }
+
+    private function isStatusTransition(string $transitionStatus): bool
+    {
+        return $transitionStatus === 'status';
     }
 
     /**

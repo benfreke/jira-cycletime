@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Jobs;
+namespace Tests\Unit\Jobs;
 
 use App\Jobs\GetChangeLogs;
 use App\Jobs\UpdateTransitionDone;
