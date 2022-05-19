@@ -24,6 +24,13 @@ class Issue extends Model
     ];
 
     /**
+     * Always load transition at the same time
+     *
+     * @var string[]
+     */
+    protected $with = ['transition'];
+
+    /**
      * @return Transition|HasOne|null
      */
     public function transition(): Transition|HasOne|null

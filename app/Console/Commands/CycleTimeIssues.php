@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\GetChangeLogs;
 use App\Models\Issue;
 use App\Services\Jira;
 use Exception;
@@ -63,9 +64,11 @@ class CycleTimeIssues extends Command
                 ];
                 $keyField = ['issue_id' => $issue['key']];
 
-                Issue::updateOrCreate($keyField, $upsertFields);
+                $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
+                // Make sure the transition exists as well
+                $issueModel->transition()->create($keyField);
 
-                $this->call(CycleTimeTransitions::class, ['key' => $issue['key']]);
+                GetChangeLogs::dispatch($issueModel);
             } catch (Exception $exception) {
                 $this->error($exception->getMessage());
             }

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Command;
 
-use App\Jobs\GetTransitions;
+use App\Jobs\GetChangeLogs;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -24,14 +24,12 @@ class CycleTimeIssuesTest extends TestCase
     {
         // Arrange
         Queue::fake();
-
-        // Act
         Http::fake(['*' => Http::response($this->getFixture('fakeJiraResponse.json'))]);
 
         // Act
         Artisan::call('cycletime:issues', ['resultsToGet' => 1]);
 
         // Assert
-        Queue::assertPushed(GetTransitions::class, 2);
+        Queue::assertPushed(GetChangeLogs::class, 1);
     }
 }
