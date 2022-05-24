@@ -24,12 +24,7 @@ class TransitionFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the user is suspended.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    public function pastDates()
+    public function setValidStartDone(): TransitionFactory
     {
         return $this->state(function (array $attributes) {
             return [
@@ -38,18 +33,23 @@ class TransitionFactory extends Factory
             ];
         });
     }
-    /**
-     * Indicate that the user is suspended.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    public function futureDates()
+
+    public function setUpdatedAtPast(): TransitionFactory
     {
         return $this->state(function (array $attributes) {
             return [
-                'start' => Carbon::now()->addDays(5),
-                'done' => Carbon::now()->subDays(10),
+                'updated_at' => Carbon::now()->subDays(5),
             ];
         });
     }
+
+    public function setUpdatedAtFuture(): TransitionFactory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'updated_at' => Carbon::now()->addDays(5),
+            ];
+        });
+    }
+
 }
