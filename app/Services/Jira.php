@@ -44,7 +44,7 @@ class Jira
     {
         $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
             ->acceptJson()->get(
-                config('cycletime.jira-host') . "rest/api/3/issue/{$issueId}/changelog",
+                config('cycletime.jira-host') . "rest/api/3/issue/$issueId/changelog",
                 []
             );
 

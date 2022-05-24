@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Issue;
 use App\Services\Jira;
+use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,10 +38,16 @@ class GetChangeLogs implements ShouldQueue
                 // If this is a status transition, let's do some stuff
                 if ($this->jiraService->isStartTransition($changeLog)) {
                     // Do something here
-                    UpdateTransitionStart::dispatch($this->issue->transition)->delay(now()->addSeconds(10 * $index));
+                    UpdateTransitionStart::dispatch(
+                        $this->issue->transition,
+                        CarbonImmutable::parse($changeLogItem['created'])
+                    )->delay(now()->addSeconds(10 * $index));
                 }
                 if ($this->jiraService->isDoneTransition($changeLog)) {
-                    UpdateTransitionDone::dispatch($this->issue->transition)->delay(now()->addSeconds(10 * $index));
+                    UpdateTransitionDone::dispatch(
+                        $this->issue->transition,
+                        CarbonImmutable::parse($changeLogItem['created'])
+                    )->delay(now()->addSeconds(10 * $index));
                 }
             }
         }

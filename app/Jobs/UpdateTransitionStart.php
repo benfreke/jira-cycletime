@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Transition;
+use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -18,9 +19,8 @@ class UpdateTransitionStart implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(private Transition $transition)
+    public function __construct(private readonly Transition $transition, private CarbonImmutable $changelogStartTime)
     {
-        //
     }
 
     /**
@@ -30,6 +30,9 @@ class UpdateTransitionStart implements ShouldQueue
      */
     public function handle()
     {
-        //
+        if ($this->transition->isOlderStart($this->changelogStartTime)) {
+            $this->transition->start = $this->changelogStartTime;
+            $this->transition->save();
+        }
     }
 }
