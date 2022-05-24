@@ -1,9 +1,8 @@
 <?php
 
-namespace Tests\Unit\Jobs;
+namespace Tests\Feature\Jobs;
 
 use App\Jobs\UpdateTransitionDone;
-use App\Jobs\UpdateTransitionStart;
 use App\Models\Issue;
 use App\Models\Transition;
 use Carbon\CarbonImmutable;
