@@ -47,7 +47,7 @@ class UpdateTransitionStartTest extends TestCase
     public function testUpdateExistingStart()
     {
         // Arrange
-        /** @var Issue $issueNoStart */
+        /** @var Issue $issue */
         $issue = Issue::factory()->has(Transition::factory(['start' => CarbonImmutable::now()]))->create(
             ['issue_id' => 'fake']
         );

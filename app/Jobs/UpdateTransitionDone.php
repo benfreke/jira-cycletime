@@ -2,8 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Models\Transition;
+use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -18,9 +19,8 @@ class UpdateTransitionDone implements ShouldQueue
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(private readonly Transition $transition, private CarbonImmutable $changelogDoneTime)
     {
-        //
     }
 
     /**
@@ -30,6 +30,9 @@ class UpdateTransitionDone implements ShouldQueue
      */
     public function handle()
     {
-        //
+        if ($this->transition->isNewerDone($this->changelogDoneTime)) {
+            $this->transition->done = $this->changelogDoneTime;
+            $this->transition->save();
+        }
     }
 }
