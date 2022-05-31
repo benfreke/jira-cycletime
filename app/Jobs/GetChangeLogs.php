@@ -27,6 +27,8 @@ class GetChangeLogs implements ShouldQueue
     /**
      * Execute the job.
      *
+     * Extra jobs are added to the queue on a delay, so that (in theory) we don't end up with a database lock
+     *
      * @return void
      */
     public function handle()
@@ -41,13 +43,13 @@ class GetChangeLogs implements ShouldQueue
                     UpdateTransitionStart::dispatch(
                         $this->issue->transition,
                         CarbonImmutable::parse($changeLogItem['created'])
-                    )->delay(now()->addSeconds(10 * $index));
+                    )->delay(now()->addSeconds(2 * $index));
                 }
                 if ($this->jiraService->isDoneTransition($changeLog)) {
                     UpdateTransitionDone::dispatch(
                         $this->issue->transition,
                         CarbonImmutable::parse($changeLogItem['created'])
-                    )->delay(now()->addSeconds(10 * $index));
+                    )->delay(now()->addSeconds(2 * $index));
                 }
             }
         }
