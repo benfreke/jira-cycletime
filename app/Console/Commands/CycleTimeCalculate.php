@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Jobs\UpdateCycleTime;
 use App\Models\Issue;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CycleTimeCalculate extends Command
 {
@@ -40,8 +41,9 @@ class CycleTimeCalculate extends Command
     public function handle(): int
     {
         $results = Issue::needsNewCycletime();
-        $this->info('Total: ' . $results->count());
+        Log::info('Total to calculate: ' . $results->count());
         foreach ($results->get() as $issue) {
+            Log::info('Dispatching cycletime calculation for ' . $issue->issue_id);
             UpdateCycleTime::dispatch($issue);
         }
         return self::SUCCESS;

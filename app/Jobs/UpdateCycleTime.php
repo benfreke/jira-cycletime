@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class UpdateCycleTime implements ShouldQueue
 {
@@ -18,9 +19,8 @@ class UpdateCycleTime implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(private Issue $issue)
+    public function __construct(private readonly Issue $issue)
     {
-        //
     }
 
     /**
@@ -30,7 +30,9 @@ class UpdateCycleTime implements ShouldQueue
      */
     public function handle()
     {
+        Log::info('Calculating cycletime for ' . $this->issue->issue_id);
         $this->issue->cycletime = $this->issue->transition->done->diffInBusinessDays($this->issue->transition->start);
         $this->issue->save();
+        $this->issue->touch();
     }
 }
