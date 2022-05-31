@@ -26,10 +26,16 @@ class IssueTest extends TestCase
             'last_jira_update' => Carbon::now()->subHours(5)->subMinute(),
         ]);
         self::assertEquals(5, $issueClass->getLastUpdatedDate());
+
         Issue::factory()->create([
             'last_jira_update' => Carbon::now()->subHours(5)->addMinute(),
         ]);
         self::assertEquals(4, $issueClass->getLastUpdatedDate());
+
+        Issue::factory()->create([
+            'last_jira_update' => Carbon::now()
+        ]);
+        self::assertSame(0, $issueClass->getLastUpdatedDate());
     }
 
     public function testTransitionRelationship()
