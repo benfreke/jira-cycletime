@@ -39,6 +39,9 @@ class Issue extends Model
     }
 
     /**
+     * This should return all issues,
+     *  that have had an updated start or done transition
+     *  since the last time cycletime was calculated
      * @param  Builder  $query
      *
      * @return Builder
@@ -47,7 +50,7 @@ class Issue extends Model
     {
         return $query
             ->join('transitions', 'issues.issue_id', '=', 'transitions.issue_id')
-            ->whereColumn('issues.last_jira_update', '<=', 'transitions.updated_at')
+            ->whereColumn('issues.updated_at', '<=', 'transitions.updated_at')
             ->whereNotNull('transitions.start')
             ->whereNotNull('transitions.done');
     }
