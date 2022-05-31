@@ -66,7 +66,9 @@ class CycleTimeIssues extends Command
 
                 $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
                 // Make sure the transition exists as well
-                $issueModel->transition()->create($keyField);
+                if (is_null($issueModel->transition)) {
+                    $issueModel->transition()->create();
+                }
 
                 GetChangeLogs::dispatch($issueModel);
             } catch (Exception $exception) {
