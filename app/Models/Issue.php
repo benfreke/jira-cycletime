@@ -130,7 +130,7 @@ class Issue extends Model
             return null;
         }
         $hours = $lastUpdatedIssue->last_jira_update->diffInHours();
-        if (!$hours) {
+        if (!is_numeric($hours)) {
             return null;
         }
         return $hours;
