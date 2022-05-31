@@ -39,6 +39,23 @@ services:
         volumes:
             - '~/.composer:/tmp:delegated'
             - './:/var/www/html:delegated'
+
+    worker:
+        build:
+            dockerfile: scripts/docker/Dockerfile
+        image: cycletime:1.0.2
+        init: true
+        networks:
+            - php
+            - redis
+            - database
+        volumes:
+            - '~/.composer:/tmp:delegated'
+            - './:/var/www/html:delegated'
+        command: ["php", "artisan", "queue:work"]
+        restart: unless-stopped
+
+
     redis:
         image: 'redis:6.2.6-alpine'
         init: true
