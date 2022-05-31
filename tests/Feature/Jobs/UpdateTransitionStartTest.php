@@ -21,12 +21,11 @@ class UpdateTransitionStartTest extends TestCase
     public function testSettingStartFromNull()
     {
         // Arrange
-        CarbonImmutable::setTestNow();
         /** @var Issue $issueNoStart */
         $issue = Issue::factory()->has(Transition::factory())->create(
             ['issue_id' => 'fake']
         );
-        $timeToSet = CarbonImmutable::now();
+        $timeToSet = CarbonImmutable::now()->subDays();
         // Act
         static::assertNull($issue->transition->start);
         $job = new UpdateTransitionStart($issue->transition, $timeToSet);
@@ -35,6 +34,7 @@ class UpdateTransitionStartTest extends TestCase
 
         // Assert
         static::assertNotNull($issue->transition->start);
+        static::assertTrue($issue->transition->updated_at->greaterThan($timeToSet));
         static::assertTrue($timeToSet->isSameDay($issue->transition->start));
         static::assertTrue($timeToSet->isSameHour($issue->transition->start));
         static::assertTrue($timeToSet->isSameMinute($issue->transition->start));
@@ -54,6 +54,7 @@ class UpdateTransitionStartTest extends TestCase
         $timeToSet = CarbonImmutable::now()->subDays(3);
         // Act
         static::assertNotNull($issue->transition->start);
+        static::assertNotNull($issue->transition->updated_at);
         $job = new UpdateTransitionStart($issue->transition, $timeToSet);
         $job->handle();
         $issue->transition->refresh();
@@ -63,5 +64,6 @@ class UpdateTransitionStartTest extends TestCase
         static::assertTrue($timeToSet->isSameHour($issue->transition->start));
         static::assertTrue($timeToSet->isSameMinute($issue->transition->start));
         static::assertTrue($timeToSet->isSameSecond($issue->transition->start));
+        static::assertTrue($timeToSet->lessThan($issue->transition->updated_at));
     }
 }
