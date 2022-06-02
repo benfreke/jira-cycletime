@@ -38,6 +38,17 @@
         }
     },
     "scripts": {
+        "test-coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "./vendor/bin/phpunit -c phpunit.xml --coverage-text --colors=never"
+        ],
+        "test": [
+            "./vendor/bin/phpunit -c phpunit.xml"
+        ],
+        "lint-php": [
+            "composer install",
+            "find . -iname '*.php' -not -path \"./vendor/*\" -print0 | xargs -0 -n1 -P8 php -l"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

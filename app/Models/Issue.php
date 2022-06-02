@@ -23,9 +23,42 @@ class Issue extends Model
         'last_jira_update' => 'immutable_datetime',
     ];
 
+    /**
+     * Always load transition at the same time
+     *
+     * @var string[]
+     */
+    protected $with = ['transition'];
+
+    /**
+     * @return Transition|HasOne|null
+     */
+    public function transition(): Transition|HasOne|null
+    {
+        return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
+    }
+
+    /**
+     * This should return all issues,
+     *  that have had an updated start or done transition
+     *  since the last time cycletime was calculated
+     * @param  Builder  $query
+     *
+     * @return Builder
+     */
+    public function scopeNeedsNewCycletime(Builder $query): Builder
+    {
+        return $query
+            ->join('transitions', 'issues.issue_id', '=', 'transitions.issue_id')
+            ->whereColumn('issues.updated_at', '<=', 'transitions.updated_at')
+            ->whereNotNull('transitions.start')
+            ->whereNotNull('transitions.done');
+    }
+
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
-        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']);
+        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']
+        )->whereNotNull('assignee');
     }
 
     public function scopeHasCycletime(Builder $query): Builder|Issue
@@ -85,6 +118,22 @@ class Issue extends Model
                 Carbon::now()->endOfMonth()->endOfDay(),
             ]
         );
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLastUpdatedDate(): ?int
+    {
+        $lastUpdatedIssue = Issue::latest('last_jira_update')->first();
+        if (!isset($lastUpdatedIssue->last_jira_update)) {
+            return null;
+        }
+        $hours = $lastUpdatedIssue->last_jira_update->diffInHours();
+        if (!is_numeric($hours)) {
+            return null;
+        }
+        return $hours;
     }
 
     protected function getPastMonths(Builder $query, int $months): Builder

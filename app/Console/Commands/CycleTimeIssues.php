@@ -2,10 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\GetChangeLogs;
 use App\Models\Issue;
+use App\Services\Jira;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 class CycleTimeIssues extends Command
 {
@@ -28,7 +29,7 @@ class CycleTimeIssues extends Command
      *
      * @return void
      */
-    public function __construct(private int $resultsToGet = 60)
+    public function __construct(private readonly int $resultsToGet = 60)
     {
         parent::__construct();
     }
@@ -40,23 +41,15 @@ class CycleTimeIssues extends Command
      */
     public function handle(): int
     {
-        $response = Http::withBasicAuth(config('cycletime.jira-user'), config('cycletime.token'))
-            ->acceptJson()->get(config('cycletime.jira-url') . 'rest/api/3/search', [
-                'jql' => $this->getJql(),
-                'startAt' => 0,
-                'maxResults' => $this->resultsToGet,
-                'fields' => [
-                    'summary',
-                    'statusCategory',
-                ],
-            ]);
+        $jiraService = new Jira($this->resultsToGet);
 
-        $totalFound = count($response->json('issues'));
+        $results = $jiraService->getIssues();
+        $totalFound = count($results);
 
         $this->info("Attempting to find $this->resultsToGet issues");
         $this->info("Total found $totalFound");
 
-        foreach ($response->json('issues') as $issue) {
+        foreach ($results as $issue) {
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
@@ -71,9 +64,13 @@ class CycleTimeIssues extends Command
                 ];
                 $keyField = ['issue_id' => $issue['key']];
 
-                Issue::updateOrCreate($keyField, $upsertFields);
+                $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
+                // Make sure the transition exists as well
+                if (is_null($issueModel->transition)) {
+                    $issueModel->transition()->create();
+                }
 
-                $this->call(CycleTimeTransitions::class, ['key' => $issue['key']]);
+                GetChangeLogs::dispatch($issueModel);
             } catch (Exception $exception) {
                 $this->error($exception->getMessage());
             }
@@ -89,40 +86,4 @@ class CycleTimeIssues extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * Get all the issues in our projects, that are completed
-     *
-     * @return string
-     */
-    private function getJql(): string
-    {
-        $jql = 'project IN ("AGENCY","PLAN","UNS","CBW")';
-        $jql .= ' AND statuscategory = "Complete"';
-        $updatedHours = $this->getLastUpdatedDate();
-        if ($updatedHours) {
-            $jql .= " AND updated >= $updatedHours";
-        }
-
-        $jql .= ' ORDER BY updated ASC';
-
-        return $jql;
-    }
-
-    /**
-     * @return string|null The last updated time we have in the DB, in hours
-     */
-    private function getLastUpdatedDate(): ?string
-    {
-        $lastUpdatedIssue = Issue::latest('last_jira_update')->first();
-        if (!isset($lastUpdatedIssue->last_jira_update)) {
-            return null;
-        }
-        $hours = $lastUpdatedIssue->last_jira_update->diffInHours();
-        if ($hours) {
-            // Add an extra hour to ensure we don't miss anything
-            $hours++;
-            return "-${hours}h";
-        }
-        return null;
-    }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\UpdateCycleTime;
 use App\Models\Issue;
-use App\Models\Transition;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CycleTimeCalculate extends Command
 {
@@ -39,18 +40,12 @@ class CycleTimeCalculate extends Command
      */
     public function handle(): int
     {
-        $results = Transition::whereNotNull(['done', 'start'])->get();
-        foreach($results as $issue) {
-            $this->calculateCycleTime($issue->issue_id);
+        $results = Issue::needsNewCycletime();
+        Log::info('Total to calculate: ' . $results->count());
+        foreach ($results->get() as $issue) {
+            Log::info('Dispatching cycletime calculation for ' . $issue->issue_id);
+            UpdateCycleTime::dispatch($issue);
         }
         return self::SUCCESS;
-    }
-
-    private function calculateCycleTime(string $issueId): void
-    {
-        $issue = Issue::whereIssueId($issueId)->first();
-        $transition = Transition::whereIssueId($issueId)->first();
-        $issue->cycletime = $transition->done->diffInBusinessDays($transition->start);
-        $issue->save();
     }
 }
