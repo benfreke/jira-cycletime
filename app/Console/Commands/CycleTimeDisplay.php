@@ -168,6 +168,7 @@ class CycleTimeDisplay extends Command
                 ['id', 'cycletime', 'summary'],
                 $query->whereAssignee($assigneeToLimit)
                     ->orderByDesc('cycletime')
+                    ->without('transition')
                     ->get(
                         ['issues.issue_id', 'cycletime', 'summary']
                     )->toArray()
