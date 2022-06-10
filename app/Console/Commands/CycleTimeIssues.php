@@ -65,10 +65,18 @@ class CycleTimeIssues extends Command
                 $keyField = ['issue_id' => $issue['key']];
 
                 $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
-                // Make sure the transition exists as well
+
+                // Make sure the transition exists as well.
+                // This will be filled by later jobs
                 if (is_null($issueModel->transition)) {
                     $issueModel->transition()->create();
                 }
+
+                // We have the values for this relation, so set them now
+                $issueModel->estimate()->updateOrCreate(['issue_id' => $issueModel->id], [
+                    'spent' => $issue['fields']['timespent'],
+                    'estimated' => $issue['fields']['timeoriginalestimate'],
+                ]);
 
                 GetChangeLogs::dispatch($issueModel);
             } catch (Exception $exception) {

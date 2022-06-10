@@ -28,7 +28,7 @@ class Issue extends Model
      *
      * @var string[]
      */
-    protected $with = ['transition'];
+    protected $with = ['transition', 'estimate'];
 
     /**
      * @return Transition|HasOne|null
@@ -36,6 +36,11 @@ class Issue extends Model
     public function transition(): Transition|HasOne|null
     {
         return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
+    }
+
+    public function estimate(): Estimate|HasOne|null
+    {
+        return $this->hasOne(Estimate::class);
     }
 
     /**
