@@ -179,6 +179,26 @@ class CycleTimeDisplay extends Command
     }
 
     /**
+     * Gets the base SQL to use for all queries
+     *
+     * We need to use a join as Eloquent relationships aren't called until after a get
+     *
+     * @return Builder|Issue
+     */
+    protected function getBaseQuery(): Builder|Issue
+    {
+        return Issue::hasCycleTime()
+            ->onlyValidAssignees()
+            ->OnlyValidTypes()
+            ->join(
+                'transitions',
+                'issues.issue_id',
+                '=',
+                'transitions.issue_id'
+            );
+    }
+
+    /**
      * Scope the results to the time period
      *
      * @param  Builder|Issue  $builder
@@ -232,23 +252,6 @@ class CycleTimeDisplay extends Command
             return 0;
         }
         return number_format($total / ($count - $cellsWithZero), 2);
-    }
-
-    /**
-     * Gets the base SQL to use for all queries
-     *
-     * We need to use a join as Eloquent relationships aren't called until after a get
-     *
-     * @return Builder|Issue
-     */
-    private function getBaseQuery(): Builder|Issue
-    {
-        return Issue::hasCycleTime()->onlyValidAssignees()->join(
-            'transitions',
-            'issues.issue_id',
-            '=',
-            'transitions.issue_id'
-        );
     }
 
     /**

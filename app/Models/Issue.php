@@ -66,6 +66,11 @@ class Issue extends Model
         )->whereNotNull('assignee');
     }
 
+    public function scopeOnlyValidTypes(Builder $query): Builder
+    {
+        return $query->whereNotIn('issue_type', ['Epic']);
+    }
+
     public function scopeHasCycletime(Builder $query): Builder|Issue
     {
         return $query->whereNotNull(['cycletime']);
