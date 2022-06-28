@@ -66,10 +66,6 @@ class CycleTimeDisplay extends Command
     {
         $query = $this->getBaseQuery();
 
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->avg('cycletime'));
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->max('cycletime'));
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->count('cycletime'));
-
         // Prompt for the time period we want results for
         $timePeriod = $this->choice(
             'What time period do you want results for?',
@@ -87,7 +83,9 @@ class CycleTimeDisplay extends Command
         $query = $this->setQueryTime($query, $timePeriod);
 
         // If we want to restrict results to a single user, we do this here
+        $singleUser = false;
         if ($this->confirm('Only for a single user?')) {
+            $singleUser = true;
             $assigneeToLimit = $this->choice(
                 'Select the user to get details for',
                 $this->getBaseQuery()->groupBy('assignee')->pluck('assignee')->toArray()
@@ -96,6 +94,17 @@ class CycleTimeDisplay extends Command
         }
 
         $this->info($timePeriod);
+        $this->displayTable($query, $singleUser);
+
+        if ($singleUser) {
+            $this->displayInformation($timePeriod, $assigneeToLimit);
+        }
+
+        return self::SUCCESS;
+    }
+
+    protected function displayTable($query, $singleUser)
+    {
         // Create an array, for output of results
         $outputResults = [];
         foreach ($query->get() as $row) {
@@ -140,7 +149,7 @@ class CycleTimeDisplay extends Command
             ];
         }
         // If we have multiple people, let's do the total averages
-        if (!isset($assigneeToLimit)) {
+        if (!$singleUser) {
             $output[] = [
                 'Averages',
                 $this->getAverageFromColumn($output, 1),
@@ -156,26 +165,72 @@ class CycleTimeDisplay extends Command
             ];
         }
 
-        $this->table(
+        $this->outputTable(
             ['Name', 'Features', 'Total', 'Support', 'Total', 'CBW', 'Total', 'Agency', 'Total', 'Average', 'Total'],
             $output
         );
+    }
 
-        if (isset($assigneeToLimit)) {
-            $query = $this->getBaseQuery();
-            $query = $this->setQueryTime($query, $timePeriod);
-            $this->table(
-                ['id', 'cycletime', 'summary'],
-                $query->whereAssignee($assigneeToLimit)
-                    ->orderByDesc('cycletime')
-                    ->without('transition')
-                    ->get(
-                        ['issues.issue_id', 'cycletime', 'summary']
-                    )->toArray()
+    protected function outputTable(array $headerRow, array $values)
+    {
+        $this->table(
+            $headerRow,
+            $values
+        );
+    }
+
+    /**
+     * Gets the base SQL to use for all queries
+     *
+     * We need to use a join as Eloquent relationships aren't called until after a get
+     *
+     * @return Builder|Issue
+     */
+    protected function getBaseQuery(): Builder|Issue
+    {
+        return Issue::hasCycleTime()
+            ->onlyValidAssignees()
+            ->OnlyValidTypes()
+            ->join(
+                'transitions',
+                'issues.issue_id',
+                '=',
+                'transitions.issue_id'
             );
-        }
+    }
 
-        return self::SUCCESS;
+    protected function setDefaultOutput(array $oldArray, string $assignee): array
+    {
+        $oldArray[$assignee] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY] = [];
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_TOTAL] = 0;
+
+        return $oldArray;
+    }
+
+    protected function displayInformation(array|string $timePeriod, array|string $assignee)
+    {
+        $query = $this->getBaseQuery();
+        $query = $this->setQueryTime($query, $timePeriod);
+        $this->table(
+            ['id', 'cycletime', 'summary'],
+            $query->whereAssignee($assignee)
+                ->orderByDesc('cycletime')
+                ->without(['transition', 'estimate'])
+                ->get(
+                    ['issues.issue_id', 'cycletime', 'summary']
+                )->toArray()
+        );
     }
 
     /**
@@ -186,7 +241,7 @@ class CycleTimeDisplay extends Command
      *
      * @return Builder|Issue
      */
-    private function setQueryTime(Builder|Issue $builder, string $timePeriod): Builder|Issue
+    protected function setQueryTime(Builder|Issue $builder, string $timePeriod): Builder|Issue
     {
         match ($timePeriod) {
             self::TIME_PERIOD_LAST_QUARTER => $builder->lastQuarter(),
@@ -208,9 +263,9 @@ class CycleTimeDisplay extends Command
      * @param  array  $resultSet
      * @param  int  $columnKey
      *
-     * @return float
+     * @return string
      */
-    private function getAverageFromColumn(array $resultSet, int $columnKey): float
+    protected function getAverageFromColumn(array $resultSet, int $columnKey): string
     {
         $total = 0;
         $count = count($resultSet);
@@ -235,23 +290,6 @@ class CycleTimeDisplay extends Command
     }
 
     /**
-     * Gets the base SQL to use for all queries
-     *
-     * We need to use a join as Eloquent relationships aren't called until after a get
-     *
-     * @return Builder|Issue
-     */
-    private function getBaseQuery(): Builder|Issue
-    {
-        return Issue::hasCycleTime()->onlyValidAssignees()->join(
-            'transitions',
-            'issues.issue_id',
-            '=',
-            'transitions.issue_id'
-        );
-    }
-
-    /**
      * Gets the average cycletime for a given period
      *
      * @param  array  $results
@@ -264,24 +302,5 @@ class CycleTimeDisplay extends Command
             return 0.00;
         }
         return number_format($results[self::OUTPUT_TOTAL] / $results[self::OUTPUT_COUNT], 2);
-    }
-
-    private function setDefaultOutput(array $oldArray, string $assignee): array
-    {
-        $oldArray[$assignee] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_AGENCY] = [];
-        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_TOTAL] = 0;
-
-        return $oldArray;
     }
 }
