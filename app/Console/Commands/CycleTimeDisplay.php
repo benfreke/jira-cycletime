@@ -66,10 +66,6 @@ class CycleTimeDisplay extends Command
     {
         $query = $this->getBaseQuery();
 
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->avg('cycletime'));
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->max('cycletime'));
-//        $this->info($query->whereProject('UNS')->whereIssueType('Bug')->hasCycleTime()->count('cycletime'));
-
         // Prompt for the time period we want results for
         $timePeriod = $this->choice(
             'What time period do you want results for?',
@@ -96,6 +92,13 @@ class CycleTimeDisplay extends Command
         }
 
         $this->info($timePeriod);
+        $this->displayTable($query, $timePeriod);
+
+        return self::SUCCESS;
+    }
+
+    protected function displayTable($query, $timePeriod)
+    {
         // Create an array, for output of results
         $outputResults = [];
         foreach ($query->get() as $row) {
@@ -156,7 +159,7 @@ class CycleTimeDisplay extends Command
             ];
         }
 
-        $this->table(
+        $this->outputTable(
             ['Name', 'Features', 'Total', 'Support', 'Total', 'CBW', 'Total', 'Agency', 'Total', 'Average', 'Total'],
             $output
         );
@@ -174,8 +177,14 @@ class CycleTimeDisplay extends Command
                     )->toArray()
             );
         }
+    }
 
-        return self::SUCCESS;
+    protected function outputTable(array $headerRow, array $values)
+    {
+        $this->table(
+            $headerRow,
+            $values
+        );
     }
 
     /**
@@ -196,6 +205,25 @@ class CycleTimeDisplay extends Command
                 '=',
                 'transitions.issue_id'
             );
+    }
+
+    protected function setDefaultOutput(array $oldArray, string $assignee): array
+    {
+        $oldArray[$assignee] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY] = [];
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_TOTAL] = 0;
+
+        return $oldArray;
     }
 
     /**
@@ -267,24 +295,5 @@ class CycleTimeDisplay extends Command
             return 0.00;
         }
         return number_format($results[self::OUTPUT_TOTAL] / $results[self::OUTPUT_COUNT], 2);
-    }
-
-    private function setDefaultOutput(array $oldArray, string $assignee): array
-    {
-        $oldArray[$assignee] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW] = [];
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL] = 0;
-        $oldArray[$assignee][self::PROJECT_AGENCY] = [];
-        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_COUNT] = 0;
-        $oldArray[$assignee][self::PROJECT_AGENCY][self::OUTPUT_TOTAL] = 0;
-
-        return $oldArray;
     }
 }
