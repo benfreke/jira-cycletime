@@ -83,7 +83,9 @@ class CycleTimeDisplay extends Command
         $query = $this->setQueryTime($query, $timePeriod);
 
         // If we want to restrict results to a single user, we do this here
+        $singleUser = false;
         if ($this->confirm('Only for a single user?')) {
+            $singleUser = true;
             $assigneeToLimit = $this->choice(
                 'Select the user to get details for',
                 $this->getBaseQuery()->groupBy('assignee')->pluck('assignee')->toArray()
@@ -92,12 +94,16 @@ class CycleTimeDisplay extends Command
         }
 
         $this->info($timePeriod);
-        $this->displayTable($query, $timePeriod);
+        $this->displayTable($query, $singleUser);
+
+        if ($singleUser) {
+            $this->displayInformation($timePeriod, $assigneeToLimit);
+        }
 
         return self::SUCCESS;
     }
 
-    protected function displayTable($query, $timePeriod)
+    protected function displayTable($query, $singleUser)
     {
         // Create an array, for output of results
         $outputResults = [];
@@ -143,7 +149,7 @@ class CycleTimeDisplay extends Command
             ];
         }
         // If we have multiple people, let's do the total averages
-        if (!isset($assigneeToLimit)) {
+        if (!$singleUser) {
             $output[] = [
                 'Averages',
                 $this->getAverageFromColumn($output, 1),
@@ -163,20 +169,6 @@ class CycleTimeDisplay extends Command
             ['Name', 'Features', 'Total', 'Support', 'Total', 'CBW', 'Total', 'Agency', 'Total', 'Average', 'Total'],
             $output
         );
-
-        if (isset($assigneeToLimit)) {
-            $query = $this->getBaseQuery();
-            $query = $this->setQueryTime($query, $timePeriod);
-            $this->table(
-                ['id', 'cycletime', 'summary'],
-                $query->whereAssignee($assigneeToLimit)
-                    ->orderByDesc('cycletime')
-                    ->without(['transition', 'estimate'])
-                    ->get(
-                        ['issues.issue_id', 'cycletime', 'summary']
-                    )->toArray()
-            );
-        }
     }
 
     protected function outputTable(array $headerRow, array $values)
@@ -226,6 +218,21 @@ class CycleTimeDisplay extends Command
         return $oldArray;
     }
 
+    protected function displayInformation(array|string $timePeriod, array|string $assignee)
+    {
+        $query = $this->getBaseQuery();
+        $query = $this->setQueryTime($query, $timePeriod);
+        $this->table(
+            ['id', 'cycletime', 'summary'],
+            $query->whereAssignee($assignee)
+                ->orderByDesc('cycletime')
+                ->without(['transition', 'estimate'])
+                ->get(
+                    ['issues.issue_id', 'cycletime', 'summary']
+                )->toArray()
+        );
+    }
+
     /**
      * Scope the results to the time period
      *
@@ -234,7 +241,7 @@ class CycleTimeDisplay extends Command
      *
      * @return Builder|Issue
      */
-    private function setQueryTime(Builder|Issue $builder, string $timePeriod): Builder|Issue
+    protected function setQueryTime(Builder|Issue $builder, string $timePeriod): Builder|Issue
     {
         match ($timePeriod) {
             self::TIME_PERIOD_LAST_QUARTER => $builder->lastQuarter(),
@@ -256,9 +263,9 @@ class CycleTimeDisplay extends Command
      * @param  array  $resultSet
      * @param  int  $columnKey
      *
-     * @return float
+     * @return string
      */
-    private function getAverageFromColumn(array $resultSet, int $columnKey): float
+    protected function getAverageFromColumn(array $resultSet, int $columnKey): string
     {
         $total = 0;
         $count = count($resultSet);

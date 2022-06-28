@@ -47,7 +47,7 @@ class EstimateDisplay extends CycleTimeDisplay
             );
     }
 
-    protected function displayTable($query, $timePeriod)
+    protected function displayTable($query, $singleUser)
     {
         $outputResults = [];
         foreach ($query->get() as $row) {
@@ -72,10 +72,22 @@ class EstimateDisplay extends CycleTimeDisplay
                 $name,
                 $result[self::TOTAL],
                 $result[self::TOTAL_ESTIMATED],
-                round(($result[self::TOTAL_ESTIMATED] / $result[self::TOTAL]) * 100),
+                round(($result[self::TOTAL_ESTIMATED] / $result[self::TOTAL]) * 100) . '%',
                 $this->getVariance($result[self::VARIANCE]),
             ];
         }
+
+        // If we have multiple people, let's do the total averages
+        if (!$singleUser) {
+            $output[] = [
+                'Averages',
+                $this->getAverageFromColumn($output, 1),
+                $this->getAverageFromColumn($output, 2),
+                $this->getAverageFromColumn($output, 3),
+                $this->getAverageFromColumn($output, 4),
+            ];
+        }
+
         $this->outputTable(
             ['Name', self::TOTAL, self::HAS_ESTIMATE, self::TOTAL_ESTIMATED, self::VARIANCE],
             $output
@@ -93,6 +105,70 @@ class EstimateDisplay extends CycleTimeDisplay
         return $oldArray;
     }
 
+    protected function displayInformation(array|string $timePeriod, array|string $assignee)
+    {
+        $query = $this->getBaseQuery();
+        $query = $this->setQueryTime($query, $timePeriod);
+        $this->table(
+            ['id', 'estimated', 'spent', 'variance', 'summary'],
+            $this->addVariance(
+                $query->whereAssignee($assignee)
+                    ->orderByDesc('cycletime')
+                    ->without(['transition'])
+                    ->get(
+                        ['issues.issue_id', 'estimated', 'spent', 'summary']
+                    )->toArray()
+            )
+        );
+    }
+
+    /**
+     * Gets the average of a column
+     *
+     * Only counts rows that have a non zero value
+     *
+     * @param  array  $resultSet
+     * @param  int  $columnKey
+     *
+     * @return string
+     */
+    protected function getAverageFromColumn(array $resultSet, int $columnKey): string
+    {
+        $total = 0;
+        $count = count($resultSet);
+        if (!$count) {
+            return 0;
+        }
+        $cellsWithZero = 0;
+        for ($i = 0; $i < $count; $i++) {
+            $cellNumber = intval(rtrim($resultSet[$i][$columnKey], '%'));
+            $total += $cellNumber;
+
+            // If the value was zero, don't count this when deciding the average
+            if (!$cellNumber) {
+                $cellsWithZero++;
+            }
+        }
+        // Exit early if they cancel each other out
+        if ($count === $cellsWithZero) {
+            return 0;
+        }
+        return number_format($total / ($count - $cellsWithZero), 2);
+    }
+
+    private function addVariance(array $rawResults): array
+    {
+        $fixedResults = [];
+        foreach ($rawResults as $index => $row) {
+            $fixedResults[$index][0] = $row['issue_id'];
+            $fixedResults[$index][1] = $row['estimated'] / 60;
+            $fixedResults[$index][2] = $row['spent'] / 60;
+            $fixedResults[$index][3] = $this->getVarianceValue($row['estimated'], $row['spent']);
+            $fixedResults[$index][4] = $row['summary'];
+        }
+        return $fixedResults;
+    }
+
     private function getVariance(array $fullResults): string
     {
         $defaultValue = '0%';
@@ -105,14 +181,24 @@ class EstimateDisplay extends CycleTimeDisplay
                 $variances[] = 100;
                 continue;
             }
-            $variances[] = abs(
-                    ($result[self::TOTAL_ESTIMATED] - $result[self::TOTAL])
-                    / $result[self::TOTAL_ESTIMATED]
-                ) * 100;
+            $variances[] = $this->getVarianceValue($result[self::TOTAL_ESTIMATED], $result[self::TOTAL]);
         }
         if (count($variances)) {
             return round(array_sum($variances) / count($variances)) . '%';
         }
         return $defaultValue;
+    }
+
+    private function getVarianceValue(?int $estimated, ?int $spent): float
+    {
+        if (!$estimated || !$spent) {
+            return 100.00;
+        }
+        return number_format(
+            abs(
+                ($estimated - $spent)
+                / $estimated
+            ) * 100
+        );
     }
 }
