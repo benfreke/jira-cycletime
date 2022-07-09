@@ -33,6 +33,7 @@ class EstimateDisplay extends CycleTimeDisplay
     {
         return Issue::onlyValidAssignees()
             ->OnlyValidTypes()
+            ->where('spent', '>', 0)
             ->leftJoin(
                 'estimates',
                 'estimates.issue_id',
