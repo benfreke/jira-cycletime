@@ -18,7 +18,7 @@ jobs:
         uses: php-actions/composer@v6
         with:
           php_version: "8.1"
-          php_extensions: calendar pdo
+          php_extensions: calendar
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
@@ -26,7 +26,7 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
           args: --coverage-text
-          php_extensions: xdebug calendar
+          php_extensions: xdebug calendar pdo_pgsql
         env:
           XDEBUG_MODE: coverage
     services:
