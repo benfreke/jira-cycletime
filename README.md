@@ -1,5 +1,8 @@
 # Jira Cycle Time
 
+![example workflow](https://github.com/benfreke/jira-cycletime/actions/workflows/actions.yml/badge.svg)
+[![codecov](https://codecov.io/gh/benfreke/jira-cycletime/branch/main/graph/badge.svg?token=A5EMTMUVXW)](https://codecov.io/gh/benfreke/jira-cycletime)
+
 Use this Laravel PHP based repository to understand the cycle time within a Jira project.
 This is based on status categories within Jira.
 

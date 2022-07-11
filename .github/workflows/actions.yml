@@ -46,3 +46,7 @@ jobs:
         env:
           XDEBUG_MODE: coverage
           APP_ENV: ci
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
