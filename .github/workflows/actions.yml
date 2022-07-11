@@ -1,38 +1,46 @@
 name: 'Main deploy'
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-    tests:
-        name: PHP Tests
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v2
+  tests:
+    name: PHP Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 
-            -   name: Cache Composer dependencies
-                uses: actions/cache@v2
-                with:
-                    path: /tmp/composer-cache
-                    key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-            -   name: Install Dependencies
-                uses: php-actions/composer@v6
-                with:
-                    php_extensions: calendar
+      - name: Install Dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: "8.1"
+          php_extensions: calendar pdo
 
-            -   name: PHPUnit Tests
-                uses: php-actions/phpunit@v3
-                with:
-                    bootstrap: vendor/autoload.php
-                    configuration: phpunit.xml
-                    args: --coverage-text
-                    php_extensions: xdebug calendar
-                env:
-                    XDEBUG_MODE: coverage
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        with:
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml
+          args: --coverage-text
+          php_extensions: xdebug calendar
+        env:
+          XDEBUG_MODE: coverage
+    services:
+      pgsql-testing:
+        image: postgres:14.1-alpine
+        env:
+          POSTGRES_DB: laravel
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: root
 
