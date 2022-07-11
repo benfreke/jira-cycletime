@@ -40,5 +40,4 @@ jobs:
           php_extensions: xdebug calendar pdo_pgsql
         env:
           XDEBUG_MODE: coverage
-
-
+          APP_ENV: ci
