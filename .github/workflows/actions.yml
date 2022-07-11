@@ -48,5 +48,6 @@ jobs:
           APP_ENV: ci
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v3
+        if: github.ref == 'refs/heads/main'
         with:
           files: coverage.xml

@@ -45,7 +45,7 @@ services:
     environment:
       - 'COMPARE_ENV_FILES=${COMPARE_ENV_FILES:-0}'
       - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
-      - 'APP_ENV=baf'
+      - 'APP_ENV=testing'
     build:
       dockerfile: scripts/docker/Dockerfile
     image: cycletime/web:1.0.2
@@ -57,8 +57,7 @@ services:
     volumes:
       - '~/.composer:/tmp:delegated'
       - './:/var/www/html:delegated'
-    command: echo $APP_ENV
-#    command: ["./vendor/bin/phpunit"]
+    command: ["./vendor/bin/phpunit"]
 
   worker:
     build:
