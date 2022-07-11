@@ -1,38 +1,48 @@
 name: 'Main deploy'
-on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
-    workflow_dispatch:
+on: [ push ]
 
 jobs:
-    tests:
-        name: PHP Tests
-        runs-on: ubuntu-latest
-        steps:
-            -   uses: actions/checkout@v2
+  tests:
+    name: PHP Tests
+    runs-on: ubuntu-latest
+    services:
+      pgsql-testing:
+        image: postgres:14.1-alpine
+        env:
+          POSTGRES_DB: laravel
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: root
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
 
-            -   name: Cache Composer dependencies
-                uses: actions/cache@v2
-                with:
-                    path: /tmp/composer-cache
-                    key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-            -   name: Install Dependencies
-                uses: php-actions/composer@v6
-                with:
-                    php_extensions: calendar
+      - name: Install Dependencies
+        uses: php-actions/composer@v6
+        with:
+          php_version: "8.1"
+          php_extensions: calendar
 
-            -   name: PHPUnit Tests
-                uses: php-actions/phpunit@v3
-                with:
-                    bootstrap: vendor/autoload.php
-                    configuration: phpunit.xml
-                    args: --coverage-text
-                    php_extensions: xdebug calendar
-                env:
-                    XDEBUG_MODE: coverage
+      # Dirty hack to get the right db name in CI
+      - name: Add env values
+        run: |
+          cp .env.ci .env.testing
 
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        with:
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml
+          args: --coverage-text
+          php_extensions: xdebug calendar pdo_pgsql
+        env:
+          XDEBUG_MODE: coverage
+          APP_ENV: ci
