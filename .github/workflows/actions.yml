@@ -1,10 +1,21 @@
 name: 'Main deploy'
-on: [push]
+on: [ push ]
 
 jobs:
   tests:
     name: PHP Tests
     runs-on: ubuntu-latest
+    services:
+      pgsql-testing:
+        image: postgres:14.1-alpine
+        env:
+          POSTGRES_DB: laravel
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: root
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v2
 
@@ -29,11 +40,5 @@ jobs:
           php_extensions: xdebug calendar pdo_pgsql
         env:
           XDEBUG_MODE: coverage
-    services:
-      pgsql-testing:
-        image: postgres:14.1-alpine
-        env:
-          POSTGRES_DB: laravel
-          POSTGRES_PASSWORD: password
-          POSTGRES_USER: root
+
 
