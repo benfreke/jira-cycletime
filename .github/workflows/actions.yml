@@ -35,7 +35,6 @@ jobs:
       - name: Add env values
         run: |
           cp .env.ci .env.testing
-          php artisan key:generate
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3

@@ -40,6 +40,26 @@ services:
       - '~/.composer:/tmp:delegated'
       - './:/var/www/html:delegated'
 
+  test:
+    env_file: ".env.ci"
+    environment:
+      - 'COMPARE_ENV_FILES=${COMPARE_ENV_FILES:-0}'
+      - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
+      - 'APP_ENV=baf'
+    build:
+      dockerfile: scripts/docker/Dockerfile
+    image: cycletime/web:1.0.2
+    init: true
+    networks:
+      - php
+      - redis
+      - database
+    volumes:
+      - '~/.composer:/tmp:delegated'
+      - './:/var/www/html:delegated'
+    command: echo $APP_ENV
+#    command: ["./vendor/bin/phpunit"]
+
   worker:
     build:
       dockerfile: scripts/docker/Dockerfile
