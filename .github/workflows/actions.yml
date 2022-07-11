@@ -31,9 +31,10 @@ jobs:
           php_version: "8.1"
           php_extensions: calendar
 
+      # Dirty hack to get the right db name in CI
       - name: Add env values
         run: |
-          cp .env.ci .env
+          cp .env.ci .env.testing
           php artisan key:generate
 
       - name: PHPUnit Tests
