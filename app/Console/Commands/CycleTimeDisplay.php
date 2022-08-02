@@ -16,6 +16,8 @@ class CycleTimeDisplay extends Command
 
     const PROJECT_AGENCY = 'AGENCY';
 
+    const PROJECT_SCOUT_UIUX = 'UIUX';
+
     const OUTPUT_TOTAL = 'total';
 
     const OUTPUT_COUNT = 'count';
@@ -123,10 +125,12 @@ class CycleTimeDisplay extends Command
         foreach ($outputResults as $name => $results) {
             $combined = [
                 self::OUTPUT_TOTAL => $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL]
+                    + $results[self::PROJECT_SCOUT_UIUX][self::OUTPUT_TOTAL]
                     + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL]
                     + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_TOTAL]
                     + $results[self::PROJECT_AGENCY][self::OUTPUT_TOTAL],
                 self::OUTPUT_COUNT => $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT]
+                    + $results[self::PROJECT_SCOUT_UIUX][self::OUTPUT_COUNT]
                     + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT]
                     + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT]
                     + $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT],
@@ -135,6 +139,8 @@ class CycleTimeDisplay extends Command
                 $name,
                 $this->getAverage($results[self::PROJECT_SCOUT_FEATURES]),
                 $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT],
+                $this->getAverage($results[self::PROJECT_SCOUT_UIUX]),
+                $results[self::PROJECT_SCOUT_UIUX][self::OUTPUT_COUNT],
                 $this->getAverage($results[self::PROJECT_SCOUT_SUPPORT]),
                 $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT],
                 $this->getAverage($results[self::PROJECT_SCOUT_CBW]),
@@ -145,7 +151,8 @@ class CycleTimeDisplay extends Command
                 $results[self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT]
                 + $results[self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT]
                 + $results[self::PROJECT_SCOUT_CBW][self::OUTPUT_COUNT]
-                + $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT],
+                + $results[self::PROJECT_AGENCY][self::OUTPUT_COUNT]
+                + $results[self::PROJECT_SCOUT_UIUX][self::OUTPUT_COUNT],
             ];
         }
         // If we have multiple people, let's do the total averages
@@ -162,11 +169,27 @@ class CycleTimeDisplay extends Command
                 '-',
                 $this->getAverageFromColumn($output, 9),
                 '-',
+                $this->getAverageFromColumn($output, 11),
+                '-',
             ];
         }
 
         $this->outputTable(
-            ['Name', 'Features', 'Total', 'Support', 'Total', 'CBW', 'Total', 'Agency', 'Total', 'Average', 'Total'],
+            [
+                'Name',
+                'Features',
+                'Total',
+                'UI/UX',
+                'Total',
+                'Support',
+                'Total',
+                'CBW',
+                'Total',
+                'Agency',
+                'Total',
+                'Average',
+                'Total',
+            ],
             $output
         );
     }
@@ -190,7 +213,7 @@ class CycleTimeDisplay extends Command
     {
         return Issue::hasCycleTime()
             ->onlyValidAssignees()
-            ->OnlyValidTypes()
+            ->onlyValidTypes()
             ->join(
                 'transitions',
                 'issues.issue_id',
@@ -205,6 +228,9 @@ class CycleTimeDisplay extends Command
         $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES] = [];
         $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_COUNT] = 0;
         $oldArray[$assignee][self::PROJECT_SCOUT_FEATURES][self::OUTPUT_TOTAL] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_UIUX] = [];
+        $oldArray[$assignee][self::PROJECT_SCOUT_UIUX][self::OUTPUT_COUNT] = 0;
+        $oldArray[$assignee][self::PROJECT_SCOUT_UIUX][self::OUTPUT_TOTAL] = 0;
         $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT] = [];
         $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_COUNT] = 0;
         $oldArray[$assignee][self::PROJECT_SCOUT_SUPPORT][self::OUTPUT_TOTAL] = 0;
