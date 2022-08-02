@@ -12,7 +12,7 @@ services:
     networks:
       - database
     volumes:
-      - 'db-data:/var/lib/postgresql/data'
+      - 'db-data2:/var/lib/postgresql/data'
 
   pgsql-testing:
     environment:
@@ -87,3 +87,4 @@ networks:
   redis:
 volumes:
   db-data:
+  db-data2:
