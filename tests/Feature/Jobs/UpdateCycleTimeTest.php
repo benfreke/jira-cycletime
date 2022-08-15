@@ -52,7 +52,7 @@ class UpdateCycleTimeTest extends TestCase
         );
 
         // Act
-        $job = new UpdateCycleTime($issue);
+        $job = new UpdateCycleTime($issue->id);
         $job->handle();
         $issue->refresh();
 

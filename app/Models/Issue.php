@@ -54,6 +54,7 @@ class Issue extends Model
     public function scopeNeedsNewCycletime(Builder $query): Builder
     {
         return $query
+            ->select('issues.id')
             ->join('transitions', 'issues.issue_id', '=', 'transitions.issue_id')
             ->whereColumn('issues.updated_at', '<=', 'transitions.updated_at')
             ->whereNotNull('transitions.start')

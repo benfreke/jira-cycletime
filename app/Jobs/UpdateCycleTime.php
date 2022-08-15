@@ -19,7 +19,7 @@ class UpdateCycleTime implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(private readonly Issue $issue)
+    public function __construct(private readonly int $issueId)
     {
     }
 
@@ -30,9 +30,10 @@ class UpdateCycleTime implements ShouldQueue
      */
     public function handle()
     {
-        Log::info('Calculating cycletime for ' . $this->issue->issue_id);
-        $this->issue->cycletime = $this->issue->transition->done->diffInBusinessDays($this->issue->transition->start);
-        $this->issue->save();
-        $this->issue->touch();
+        $issue = Issue::find($this->issueId);
+        Log::info('Calculating cycletime for ' . $issue->issue_id);
+        $issue->cycletime = $issue->transition->done->diffInBusinessDays($issue->transition->start);
+        $issue->save();
+        $issue->touch();
     }
 }

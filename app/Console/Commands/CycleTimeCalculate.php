@@ -43,8 +43,8 @@ class CycleTimeCalculate extends Command
         $results = Issue::needsNewCycletime();
         Log::info('Total to calculate: ' . $results->count());
         foreach ($results->get() as $issue) {
-            Log::info('Dispatching cycletime calculation for ' . $issue->issue_id);
-            UpdateCycleTime::dispatch($issue);
+            Log::info('Dispatching cycletime calculation for issue id:' . $issue->id);
+            UpdateCycleTime::dispatch($issue->id);
         }
         return self::SUCCESS;
     }
