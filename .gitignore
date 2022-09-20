@@ -14,3 +14,7 @@ yarn-error.log
 /.vscode
 /.phpstorm.meta.php
 /_ide_helper*
+
+.DS_Store
+/.phpunit.cache/code-coverage/
+/reports/
