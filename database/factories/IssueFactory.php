@@ -21,7 +21,7 @@ class IssueFactory extends Factory
     {
         return [
             'summary' => $this->faker->name(),
-            'issue_id' => $this->faker->text(5),
+            'issue_id' => $this->faker->unique()->text(5),
             'last_jira_update' => $this->faker->dateTimeInInterval('-1 month', '+20 days'),
             'assignee' => null,
             'project' => explode(',', config('cycletime.jira-categories'))[0],
