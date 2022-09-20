@@ -1,4 +1,4 @@
-FROM benfreke/php:8.1.4-pgsql
+FROM benfreke/php:8.1.10-pgsql-ci
 
 USER root
 

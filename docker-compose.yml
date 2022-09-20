@@ -30,7 +30,7 @@ services:
       - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
     build:
       dockerfile: scripts/docker/Dockerfile
-    image: cycletime/web:1.0.2
+    image: cycletime/web:1.0.3
     init: true
     networks:
       - php
