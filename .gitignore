@@ -16,3 +16,5 @@ yarn-error.log
 /_ide_helper*
 
 .DS_Store
+/.phpunit.cache/code-coverage/
+/reports/
