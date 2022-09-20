@@ -1,76 +1,49 @@
 version: '3.9'
+
+x-php-image:
+  &php-image
+  build:
+    dockerfile: scripts/docker/Dockerfile
+  image: cycletime/worker:1.0.3
+  init: true
+  networks:
+    - php
+    - redis
+    - database
+  volumes:
+    - '~/.composer:/tmp:delegated'
+    - './:/var/www/html:delegated'
+
+x-pgsql-image:
+  &pgsql-image
+  environment:
+    - 'POSTGRES_DB=${DB_DATABASE}'
+    - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
+    - 'POSTGRES_USER=${DB_USERNAME}'
+  image: 'postgres:14.1-alpine'
+  init: true
+  networks:
+    - database
+
 services:
   pgsql:
-    environment:
-      - 'POSTGRES_DB=${DB_DATABASE}'
-      - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
-      - 'POSTGRES_USER=${DB_USERNAME}'
-    image: 'postgres:14.1-alpine'
-    init: true
+    <<: *pgsql-image
     ports:
       - '5432:5432'
-    networks:
-      - database
     volumes:
       - 'db-data:/var/lib/postgresql/data'
 
   pgsql-testing:
-    environment:
-      - 'POSTGRES_DB=${DB_DATABASE}'
-      - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
-      - 'POSTGRES_USER=${DB_USERNAME}'
-    image: 'postgres:14.1-alpine'
-    init: true
-    networks:
-      - database
+    <<: *pgsql-image
 
   php:
+    <<: *php-image
     environment:
       - 'COMPARE_ENV_FILES=${COMPARE_ENV_FILES:-0}'
       - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
-    build:
-      dockerfile: scripts/docker/Dockerfile
-    image: cycletime/web:1.0.3
-    init: true
-    networks:
-      - php
-      - redis
-      - database
-    volumes:
-      - '~/.composer:/tmp:delegated'
-      - './:/var/www/html:delegated'
-
-#  test:
-#    env_file: ".env.ci"
-#    environment:
-#      - 'COMPARE_ENV_FILES=${COMPARE_ENV_FILES:-0}'
-#      - 'PHP_IDE_CONFIG=${PHP_IDE_CONFIG}'
-#      - 'APP_ENV=testing'
-#    build:
-#      dockerfile: scripts/docker/Dockerfile
-#    image: cycletime/web:1.0.2
-#    init: true
-#    networks:
-#      - php
-#      - redis
-#      - database
-#    volumes:
-#      - '~/.composer:/tmp:delegated'
-#      - './:/var/www/html:delegated'
-#    command: ["./vendor/bin/phpunit"]
 
   worker:
-    build:
-      dockerfile: scripts/docker/Dockerfile
-    image: cycletime/worker:1.0.2
-    init: true
-    networks:
-      - php
-      - redis
-      - database
-    volumes:
-      - '~/.composer:/tmp:delegated'
-      - './:/var/www/html:delegated'
+    <<: *php-image
     command: [ "php", "artisan", "queue:work" ]
     restart: unless-stopped
 
