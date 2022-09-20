@@ -126,6 +126,8 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/barryvdh/reflection-docblock" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/cmixin/business-day" />
       <excludeFolder url="file://$MODULE_DIR$/storage/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/reports" />
+      <excludeFolder url="file://$MODULE_DIR$/.phpunit.cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
