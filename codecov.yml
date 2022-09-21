@@ -1,3 +1,4 @@
 ignore:
   - app/Http/**/*
   - app/Exceptions/**/*
+  - app/Providers/**/*

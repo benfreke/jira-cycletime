@@ -20,6 +20,7 @@
         <exclude>
             <directory>./app/Http</directory>
             <directory>./app/Exceptions</directory>
+            <directory>./app/Providers</directory>
         </exclude>
         <report>
             <clover outputFile="coverage.xml"/>
