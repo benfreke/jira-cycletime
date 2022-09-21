@@ -35,8 +35,6 @@ class CycleTimeIssuesTest extends TestCase
         self::assertEquals(0, count(Estimate::all()));
         Artisan::call('cycletime:issues', ['resultsToGet' => 1]);
 
-
-
         // Assert
         self::assertEquals(1, count(Issue::all()));
         self::assertEquals(1, count(Transition::all()));
