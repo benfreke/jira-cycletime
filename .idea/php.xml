@@ -204,6 +204,7 @@
   <component name="PhpUnit">
     <phpunit_settings>
       <phpunit_by_interpreter interpreter_id="1be22555-5bcf-4e57-ad16-a259738d679c" custom_loader_path="/var/www/html/vendor/autoload.php" phpunit_phar_path="" />
+      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
     </phpunit_settings>
   </component>
 </project>
