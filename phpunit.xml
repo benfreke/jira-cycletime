@@ -13,11 +13,14 @@
         </testsuite>
     </testsuites>
     <coverage cacheDirectory=".phpunit.cache/code-coverage"
-              processUncoveredFiles="true"
-              pathCoverage="false">
+              processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./app</directory>
         </include>
+        <exclude>
+            <directory>./app/Http</directory>
+            <directory>./app/Exceptions</directory>
+        </exclude>
         <report>
             <clover outputFile="coverage.xml"/>
             <html outputDirectory="reports"/>
