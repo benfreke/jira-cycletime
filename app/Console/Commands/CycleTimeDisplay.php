@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Issue;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class CycleTimeDisplay extends Command
 {
@@ -95,7 +96,8 @@ class CycleTimeDisplay extends Command
             $query->whereAssignee($assigneeToLimit);
         }
 
-        $this->info($timePeriod);
+        $this->info($timePeriod . ': ' .$this->displayDate($timePeriod));
+
         $this->displayTable($query, $singleUser);
 
         if ($singleUser) {
@@ -328,5 +330,13 @@ class CycleTimeDisplay extends Command
             return 0.00;
         }
         return number_format($results[self::OUTPUT_TOTAL] / $results[self::OUTPUT_COUNT], 2);
+    }
+
+    private function displayDate(string $timePeriod): string
+    {
+        if (!str_contains($timePeriod, 'quarter')) {
+            return Carbon::parse($timePeriod)->getTranslatedMonthName();
+        }
+        return '';
     }
 }
