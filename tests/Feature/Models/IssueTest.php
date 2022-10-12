@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Model;
+namespace Tests\Feature\Models;
 
 use App\Models\Issue;
 use App\Models\Transition;
@@ -36,21 +36,6 @@ class IssueTest extends TestCase
             'last_jira_update' => Carbon::now()
         ]);
         self::assertSame(0, $issueClass->getLastUpdatedDate());
-    }
-
-    public function testTransitionRelationship()
-    {
-        // Test for a null Transition
-        $issueClass = Issue::factory()->create(['issue_id' => 'abc-123']);
-        self::assertNull($issueClass->transition);
-
-        // Test for a non-null transition
-        Transition::factory()
-            ->for($issueClass)
-            ->create(['issue_id' => 'abc-123']);
-        // Need to reload so issue knows about the new relationship
-        $issueClass->load('transition');
-        self::assertNotNull($issueClass->transition);
     }
 
     /**

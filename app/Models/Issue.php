@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -41,6 +42,11 @@ class Issue extends Model
     public function estimate(): Estimate|HasOne|null
     {
         return $this->hasOne(Estimate::class);
+    }
+
+    public function jirauser(): Jirauser|BelongsTo|null
+    {
+        return $this->belongsTo(Jirauser::class);
     }
 
     /**

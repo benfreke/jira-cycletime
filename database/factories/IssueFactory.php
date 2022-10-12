@@ -20,7 +20,7 @@ class IssueFactory extends Factory
     public function definition(): array
     {
         return [
-            'summary' => $this->faker->name(),
+            'summary' => $this->faker->name,
             'issue_id' => $this->faker->unique()->text(5),
             'last_jira_update' => $this->faker->dateTimeInInterval('-1 month', '+20 days'),
             'assignee' => null,
