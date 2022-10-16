@@ -101,4 +101,40 @@ class Jira
         }
         return $hours;
     }
+
+    /**
+     * National day of mourning for the queen
+     * This adds an additional holiday for Australia
+     *
+     * @return \Closure[]
+     */
+    private function getDayOfMourning()
+    {
+        return [
+            'national-day-of-mourning' => function ($year) {
+                if ($year === 2022) {
+                    return '09-22';
+                }
+                return null;
+            }
+        ];
+    }
+
+    /**
+     * Logic for part time worker (i.e. Eman)
+     *
+     * @return void
+     */
+    private function getParttime()
+    {
+//        $from = Carbon::now()->subDays(14);
+//        $to = Carbon::now();
+//        $from->setBusinessDayChecker(function (CarbonInterface $date) {
+//            if ($date->isThursday() || $date->isFriday()) {
+//                return false;
+//            }
+//            return $date->isExtraWorkday() || ($date->isWeekday() && !$date->isHoliday());
+//        });
+//        echo $to->diffInBusinessDays($from);
+    }
 }
