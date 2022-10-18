@@ -6,6 +6,10 @@ start:
 dev:
 	docker compose up php redis worker pgsql-testing
 
+.PHONY: stop
+stop:
+	docker compose down
+
 .PHONY: get-issues
 get-issues:
 	docker compose exec php php artisan cycletime:issues
