@@ -39,7 +39,7 @@ class GetChangeLogsTest extends TestCase
 
         /** @var Issue $issue */
         $issue = Issue::factory()->has(Transition::factory())->create(
-            ['issue_id' => 'PLAN-30', 'last_jira_update' => Carbon::now()->subMinutes(1)]
+            ['key' => 'PLAN-30', 'last_jira_update' => Carbon::now()->subMinutes(1)]
         );
         // Act
         $job = new GetChangeLogs($issue, $mockedJiraService);
