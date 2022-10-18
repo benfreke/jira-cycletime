@@ -47,7 +47,7 @@ class CycleTimeIssues extends Command
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
-                    throw new Exception("Assignee field blank for {$issue['key']}");
+                    continue;
                 }
                 $upsertFields = [
                     'summary' => $issue['fields']['summary'],
