@@ -26,8 +26,12 @@ Data is requested from Jira once an hour.
 
 ### Users
 
-User have many Issues
-User have many Cycletimes
+#### Relations
+
+- User have many Issues
+- User have many Cycletimes
+
+#### Attributes
 
 - Timezone
 
@@ -47,9 +51,13 @@ Transition have a Issue
 - Date
 
 ### Issues
+
+#### Relations
 Issue have a User
 Issue have a Cycletime
 Issue have many Transition
+
+#### Attributes
 
 ## Calculations
 

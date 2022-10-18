@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -28,14 +29,15 @@ class Issue extends Model
      *
      * @var string[]
      */
-    protected $with = ['transition', 'estimate'];
+//    protected $with = ['transition', 'estimate'];
+    protected $with = ['transition'];
 
     /**
-     * @return Transition|HasOne|null
+     * @return HasMany
      */
-    public function transition(): Transition|HasOne|null
+    public function transition(): HasMany
     {
-        return $this->hasOne(Transition::class, 'issue_id', 'issue_id');
+        return $this->hasMany(Transition::class);
     }
 
     public function estimate(): Estimate|HasOne|null

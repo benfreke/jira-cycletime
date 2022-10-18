@@ -43,13 +43,7 @@ class CycleTimeIssues extends Command
     {
         $jiraService = new Jira($this->resultsToGet);
 
-        $results = $jiraService->getIssues();
-        $totalFound = count($results);
-
-        $this->info("Attempting to find $this->resultsToGet issues");
-        $this->info("Total found $totalFound");
-
-        foreach ($results as $issue) {
+        foreach ($jiraService->getIssues() as $issue) {
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
@@ -58,38 +52,32 @@ class CycleTimeIssues extends Command
                 $upsertFields = [
                     'summary' => $issue['fields']['summary'],
                     'last_jira_update' => $issue['fields']['updated'],
-                    'assignee' => $issue['fields']['assignee']['displayName'],
                     'project' => $issue['fields']['project']['key'],
                     'issue_type' => $issue['fields']['issuetype']['name'],
                 ];
-                $keyField = ['issue_id' => $issue['key']];
 
+                // Define the key we want to be unique
+                $keyField = ['key' => $issue['key']];
                 $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
 
                 // Make sure the transition exists as well.
                 // This will be filled by later jobs
-                if (is_null($issueModel->transition)) {
-                    $issueModel->transition()->create();
-                }
+//                if (is_null($issueModel->transition)) {
+//                    $issueModel->transition()->create();
+//                }
 
                 // We have the values for this relation, so set them now
-                $issueModel->estimate()->updateOrCreate(['issue_id' => $issueModel->id], [
-                    'spent' => $issue['fields']['timespent'],
-                    'estimated' => $issue['fields']['timeoriginalestimate'],
-                ]);
+//                @todo add estimations back in
+//                $issueModel->estimate()->updateOrCreate(['issue_id' => $issueModel->id], [
+//                    'spent' => $issue['fields']['timespent'],
+//                    'estimated' => $issue['fields']['timeoriginalestimate'],
+//                ]);
 
                 GetChangeLogs::dispatch($issueModel);
             } catch (Exception $exception) {
                 $this->error($exception->getMessage());
             }
         }
-
-        // Let's go around again if we need to
-        if ($totalFound === $this->resultsToGet) {
-            return $this->call(CycleTimeIssues::class);
-        }
-
-        $this->info("Remember to call php artisan cycletime:calculate to generate the correct cycletime");
 
         return Command::SUCCESS;
     }

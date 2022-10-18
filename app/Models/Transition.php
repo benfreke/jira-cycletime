@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @mixin IdeHelperTransition
@@ -20,9 +21,12 @@ class Transition extends Model
         'done' => 'immutable_datetime',
     ];
 
-    public function issue()
+    /**
+     * @return BelongsTo
+     */
+    public function issue(): BelongsTo
     {
-        return $this->belongsTo(Issue::class, 'issue_id', 'issue_id');
+        return $this->belongsTo(Issue::class);
     }
 
     public function isOlderStart(CarbonImmutable $dateToCompare): bool

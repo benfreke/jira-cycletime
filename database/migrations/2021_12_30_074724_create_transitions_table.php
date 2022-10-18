@@ -15,10 +15,9 @@ class CreateTransitionsTable extends Migration
     {
         Schema::create('transitions', function (Blueprint $table) {
             $table->id();
-            $table->string('issue_id')->unique();
             $table->timestamp('start')->nullable();
             $table->timestamp('done')->nullable();
-            $table->foreign('issue_id')->references('issue_id')->on('issues');
+            $table->foreignId('issue_id')->constrained();
             $table->timestamps();
         });
     }
