@@ -33,7 +33,7 @@ class GetChangeLogs implements ShouldQueue
      */
     public function handle()
     {
-        $result = $this->jiraService->getIssueChangelogs($this->issue->issue_id);
+        $result = $this->jiraService->getIssueChangelogs($this->issue->key);
 
         foreach ($result as $index => $changeLogItem) {
             foreach ($changeLogItem['items'] as $changeLog) {
