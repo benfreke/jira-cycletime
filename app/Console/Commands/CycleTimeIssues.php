@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\GetChangeLogs;
 use App\Models\Issue;
+use App\Models\User;
 use App\Services\Jira;
 use Exception;
 use Illuminate\Console\Command;
@@ -47,24 +48,38 @@ class CycleTimeIssues extends Command
             try {
                 // Make sure all potential values exist
                 if (empty($issue['fields']['assignee'])) {
+                    // If no assignee, then we don't care about any values
                     continue;
                 }
-                $upsertFields = [
+                // Make sure we have the user created as well.
+                $userFields = [
+                    'name' => $issue['fields']['assignee']['displayName'],
+                    'email' => $issue['fields']['assignee']['emailAddress'],
+                    'timezone' => $issue['fields']['assignee']['timeZone'],
+                    'avatar' => $issue['fields']['assignee']['avatarUrls']['32x32'],
+                ];
+                $userKey = [
+                    'account_id' => $issue['fields']['assignee']['accountId'],
+                ];
+                $userModel = User::updateOrCreate($userKey, $userFields);
+
+                $issueFields = [
                     'summary' => $issue['fields']['summary'],
                     'last_jira_update' => $issue['fields']['updated'],
                     'project' => $issue['fields']['project']['key'],
                     'issue_type' => $issue['fields']['issuetype']['name'],
+                    'user_id' => $userModel->id,
                 ];
 
                 // Define the key we want to be unique
-                $keyField = ['key' => $issue['key']];
-                $issueModel = Issue::updateOrCreate($keyField, $upsertFields);
+                $issueKey = ['key' => $issue['key']];
+                $issueModel = Issue::updateOrCreate($issueKey, $issueFields);
 
                 // Make sure the transition exists as well.
                 // This will be filled by later jobs
-//                if (is_null($issueModel->transition)) {
-//                    $issueModel->transition()->create();
-//                }
+                if (is_null($issueModel->transition)) {
+                    $issueModel->transition()->create();
+                }
 
                 // We have the values for this relation, so set them now
 //                @todo add estimations back in

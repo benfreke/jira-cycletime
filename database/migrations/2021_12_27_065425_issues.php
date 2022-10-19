@@ -20,6 +20,7 @@ class Issues extends Migration
             $table->dateTime('last_jira_update');
             $table->string('project');
             $table->string('issue_type');
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
     }

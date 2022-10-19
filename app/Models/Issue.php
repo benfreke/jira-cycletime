@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -33,11 +33,19 @@ class Issue extends Model
     protected $with = ['transition'];
 
     /**
-     * @return HasMany
+     * @return HasOne|Transition
      */
-    public function transition(): HasMany
+    public function transition(): HasOne|Transition
     {
-        return $this->hasMany(Transition::class);
+        return $this->hasOne(Transition::class);
+    }
+
+    /**
+     * @return BelongsTo|User
+     */
+    public function user(): BelongsTo|User
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function estimate(): Estimate|HasOne|null
@@ -49,6 +57,7 @@ class Issue extends Model
      * This should return all issues,
      *  that have had an updated start or done transition
      *  since the last time cycletime was calculated
+     *
      * @param  Builder  $query
      *
      * @return Builder
