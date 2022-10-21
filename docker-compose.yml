@@ -4,7 +4,7 @@ x-php-image:
   &php-image
   build:
     dockerfile: scripts/docker/Dockerfile
-  image: cycletime/worker:1.0.3
+  image: cycletime/worker:1.0.4-xdebug
   init: true
   networks:
     - php
@@ -25,7 +25,45 @@ x-pgsql-image:
   networks:
     - database
 
+x-node:
+  &node-template
+  image: node:18-slim
+  init: true
+  user: node
+  environment:
+    - NODE_ENV=development
+  volumes:
+    - "~/.npm:/usr/local/npm:delegated"
+    - "./:/home/node/app:delegated"
+  working_dir: "/home/node/app"
+
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:1.0.1-alpine
+    networks:
+      - external
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  nginx:
+    image: 'nginx:1.23.1-alpine'
+    init: true
+    depends_on:
+      - nginx-proxy
+    networks:
+      - external
+      - php
+    ports:
+      - '8080:80'
+    restart: on-failure
+    volumes:
+      - './:/var/www/html:cached'
+      - './scripts/nginx/conf.d/:/etc/nginx/conf.d/:cached'
+    environment:
+      - 'VIRTUAL_HOST=cycletime.test'
+
   pgsql:
     <<: *pgsql-image
     ports:
@@ -46,6 +84,18 @@ services:
     <<: *php-image
     command: [ "php", "artisan", "queue:work" ]
     restart: unless-stopped
+#
+#  node:
+#    <<: *node-template
+#    ports:
+#      - "5173:5373"
+#    command: "npm run dev"
+
+  node:
+    <<: *node-template
+    ports:
+      - "5173:5173"
+    command: "npm run dev"
 
   redis:
     image: 'redis:7.0.4-alpine'
@@ -57,5 +107,6 @@ networks:
   database:
   php:
   redis:
+  external:
 volumes:
   db-data:

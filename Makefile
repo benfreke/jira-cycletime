@@ -1,6 +1,6 @@
 .PHONY: start
 start:
-	docker compose up php redis worker pgsql
+	docker compose up php redis worker pgsql nginx nginx-proxy
 
 .PHONY: dev
 dev:
