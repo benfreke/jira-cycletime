@@ -15,10 +15,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-//        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-//            // ... other providers
-//            \SocialiteProviders\Atlassian\AtlassianExtendSocialite::class.'@handle',
-//        ],
+        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
+            \SocialiteProviders\Atlassian\AtlassianExtendSocialite::class.'@handle',
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
