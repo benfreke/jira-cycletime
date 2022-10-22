@@ -84,12 +84,6 @@ services:
     <<: *php-image
     command: [ "php", "artisan", "queue:work" ]
     restart: unless-stopped
-#
-#  node:
-#    <<: *node-template
-#    ports:
-#      - "5173:5373"
-#    command: "npm run dev"
 
   node:
     <<: *node-template
