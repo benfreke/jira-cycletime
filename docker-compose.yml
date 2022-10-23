@@ -63,6 +63,7 @@ services:
       - './scripts/nginx/conf.d/:/etc/nginx/conf.d/:cached'
     environment:
       - 'VIRTUAL_HOST=cycletime.test'
+#      - 'VIRTUAL_HOST=c090-117-20-68-195.au.ngrok.io'
 
   pgsql:
     <<: *pgsql-image
@@ -89,6 +90,7 @@ services:
     <<: *node-template
     ports:
       - "5173:5173"
+#    command: "npm run build"
     command: "npm run dev"
 
   redis:
@@ -97,6 +99,7 @@ services:
     networks:
       - php
       - redis
+
 networks:
   database:
   php:

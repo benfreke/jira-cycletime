@@ -19,3 +19,4 @@ yarn-error.log
 /.phpunit.cache/code-coverage/
 /reports/
 /coverage.xml
+/public/build/**/*

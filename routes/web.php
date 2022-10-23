@@ -15,22 +15,13 @@ use Laravel\Socialite\Facades\Socialite;
 |
 */
 
+
 Route::get('/', function () {
-    return Inertia::render('Home');
-})->middleware(['auth', 'verified'])->name('home');
-
-
-//Route::get('/welcome', function () {
-//    return Inertia::render('Welcome', [
-//        'canLogin' => Route::has('login'),
-//        'canRegister' => Route::has('register'),
-//        'laravelVersion' => Application::VERSION,
-//        'phpVersion' => PHP_VERSION,
-//    ]);
-//});
-//
-//Route::get('/dashboard', function () {
-//    return Inertia::render('Dashboard');
-//})->middleware(['auth', 'verified'])->name('dashboard');
+    return Inertia::render('Welcome', [
+        'laravelVersion' => App::version(),
+        'phpVersion' => PHP_VERSION,
+    ]);
+//})->middleware(['auth']);
+});
 
 require __DIR__ . '/auth.php';

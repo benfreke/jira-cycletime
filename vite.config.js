@@ -5,7 +5,11 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
     server: {
         host: true,
+        // https: true,
+        // origin: "https://c090-117-20-68-195.au.ngrok.io/",
+        origin: "http://cycletime.test",
         hmr: {
+            // host: 'c090-117-20-68-195.au.ngrok.io'
             host: 'cycletime.test'
         }
     },
