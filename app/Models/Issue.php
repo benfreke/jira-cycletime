@@ -67,6 +67,7 @@ class Issue extends Model
         return $query
             ->select('issues.id')
             ->join('transitions', 'issues.issue_id', '=', 'transitions.issue_id')
+            // Comment out the below line to recalculate ALL cycletimes
             ->whereColumn('issues.updated_at', '<=', 'transitions.updated_at')
             ->whereNotNull('transitions.start')
             ->whereNotNull('transitions.done');
@@ -74,7 +75,7 @@ class Issue extends Model
 
     public function scopeOnlyValidAssignees(Builder $query): Builder
     {
-        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small']
+        return $query->whereNotIn('assignee', ['Ben Freke', 'Mersija Mujic', 'Connie Huang', 'Simon Small', 'Kristelle Cooney']
         )->whereNotNull('assignee');
     }
 

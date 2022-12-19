@@ -190,10 +190,10 @@ class EstimateDisplay extends CycleTimeDisplay
         return $defaultValue;
     }
 
-    private function getVarianceValue(?int $estimated, ?int $spent): float
+    private function getVarianceValue(?int $estimated, ?int $spent): string
     {
         if (!$estimated || !$spent) {
-            return 100.00;
+            return "100.00";
         }
         return number_format(
             abs(

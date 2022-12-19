@@ -214,6 +214,9 @@ class CycleTimeDisplay extends Command
         return Issue::hasCycleTime()
             ->onlyValidAssignees()
             ->onlyValidTypes()
+            ->whereHas('estimate', function (Builder $query) {
+                $query->where('spent', '>', 0);
+            })
             ->join(
                 'transitions',
                 'issues.issue_id',
